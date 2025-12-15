@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.food.mapper.FoodsMapper">
+    
+    <resultMap type="Foods" id="FoodsResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="foodGroup"    column="food_group"    />
+    </resultMap>
+
+    <sql id="selectFoodsVo">
+        select id, name, food_group from foods
+    </sql>
+
+    <select id="selectFoodsList" parameterType="Foods" resultMap="FoodsResult">
+        <include refid="selectFoodsVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="foodGroup != null  and foodGroup != ''"> and food_group = #{foodGroup}</if>
+        </where>
+    </select>
+    
+    <select id="selectFoodsById" parameterType="Long" resultMap="FoodsResult">
+        <include refid="selectFoodsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertFoods" parameterType="Foods">
+        insert into foods
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="foodGroup != null">food_group,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null">#{name},</if>
+            <if test="foodGroup != null">#{foodGroup},</if>
+         </trim>
+    </insert>
+
+    <update id="updateFoods" parameterType="Foods">
+        update foods
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="foodGroup != null">food_group = #{foodGroup},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteFoodsById" parameterType="Long">
+        delete from foods where id = #{id}
+    </delete>
+
+    <delete id="deleteFoodsByIds" parameterType="String">
+        delete from foods where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

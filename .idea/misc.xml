@@ -4,8 +4,17 @@
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
+        <option value="$PROJECT_DIR$/RuoYi-Vue-master/ruoyi-system/pom.xml" />
+        <option value="$PROJECT_DIR$/RuoYi-Vue-master/ruoyi-common/pom.xml" />
         <option value="$PROJECT_DIR$/RuoYi-Vue-master/pom.xml" />
+        <option value="$PROJECT_DIR$/ruoyi-smarthealth/pom.xml" />
+        <option value="$PROJECT_DIR$/RuoYi-Vue-master/ruoyi-smarthealth/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/RuoYi-Vue-master/ruoyi-smarthealth/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="21" project-jdk-type="JavaSDK">
