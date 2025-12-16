@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.workout.mapper.WorkoutExerciseDetailsMapper">
+    
+    <resultMap type="WorkoutExerciseDetails" id="WorkoutExerciseDetailsResult">
+        <result property="detailId"    column="detail_id"    />
+        <result property="logId"    column="log_id"    />
+        <result property="exerciseName"    column="exercise_name"    />
+        <result property="muscleGroup"    column="muscle_group"    />
+        <result property="equipmentUsed"    column="equipment_used"    />
+        <result property="difficultyLevel"    column="difficulty_level"    />
+        <result property="targetSets"    column="target_sets"    />
+        <result property="targetReps"    column="target_reps"    />
+        <result property="restSeconds"    column="rest_seconds"    />
+        <result property="createdAt"    column="created_at"    />
+    </resultMap>
+
+    <sql id="selectWorkoutExerciseDetailsVo">
+        select detail_id, log_id, exercise_name, muscle_group, equipment_used, difficulty_level, target_sets, target_reps, rest_seconds, created_at from workout_exercise_details
+    </sql>
+
+    <select id="selectWorkoutExerciseDetailsList" parameterType="WorkoutExerciseDetails" resultMap="WorkoutExerciseDetailsResult">
+        <include refid="selectWorkoutExerciseDetailsVo"/>
+        <where>  
+            <if test="logId != null "> and log_id = #{logId}</if>
+            <if test="exerciseName != null  and exerciseName != ''"> and exercise_name like concat('%', #{exerciseName}, '%')</if>
+            <if test="muscleGroup != null  and muscleGroup != ''"> and muscle_group = #{muscleGroup}</if>
+            <if test="equipmentUsed != null  and equipmentUsed != ''"> and equipment_used = #{equipmentUsed}</if>
+            <if test="difficultyLevel != null  and difficultyLevel != ''"> and difficulty_level = #{difficultyLevel}</if>
+            <if test="targetSets != null "> and target_sets = #{targetSets}</if>
+            <if test="targetReps != null "> and target_reps = #{targetReps}</if>
+            <if test="restSeconds != null "> and rest_seconds = #{restSeconds}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectWorkoutExerciseDetailsByDetailId" parameterType="Long" resultMap="WorkoutExerciseDetailsResult">
+        <include refid="selectWorkoutExerciseDetailsVo"/>
+        where detail_id = #{detailId}
+    </select>
+
+    <insert id="insertWorkoutExerciseDetails" parameterType="WorkoutExerciseDetails" useGeneratedKeys="true" keyProperty="detailId">
+        insert into workout_exercise_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="logId != null">log_id,</if>
+            <if test="exerciseName != null and exerciseName != ''">exercise_name,</if>
+            <if test="muscleGroup != null">muscle_group,</if>
+            <if test="equipmentUsed != null">equipment_used,</if>
+            <if test="difficultyLevel != null">difficulty_level,</if>
+            <if test="targetSets != null">target_sets,</if>
+            <if test="targetReps != null">target_reps,</if>
+            <if test="restSeconds != null">rest_seconds,</if>
+            <if test="createdAt != null">created_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="logId != null">#{logId},</if>
+            <if test="exerciseName != null and exerciseName != ''">#{exerciseName},</if>
+            <if test="muscleGroup != null">#{muscleGroup},</if>
+            <if test="equipmentUsed != null">#{equipmentUsed},</if>
+            <if test="difficultyLevel != null">#{difficultyLevel},</if>
+            <if test="targetSets != null">#{targetSets},</if>
+            <if test="targetReps != null">#{targetReps},</if>
+            <if test="restSeconds != null">#{restSeconds},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWorkoutExerciseDetails" parameterType="WorkoutExerciseDetails">
+        update workout_exercise_details
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="logId != null">log_id = #{logId},</if>
+            <if test="exerciseName != null and exerciseName != ''">exercise_name = #{exerciseName},</if>
+            <if test="muscleGroup != null">muscle_group = #{muscleGroup},</if>
+            <if test="equipmentUsed != null">equipment_used = #{equipmentUsed},</if>
+            <if test="difficultyLevel != null">difficulty_level = #{difficultyLevel},</if>
+            <if test="targetSets != null">target_sets = #{targetSets},</if>
+            <if test="targetReps != null">target_reps = #{targetReps},</if>
+            <if test="restSeconds != null">rest_seconds = #{restSeconds},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+        </trim>
+        where detail_id = #{detailId}
+    </update>
+
+    <delete id="deleteWorkoutExerciseDetailsByDetailId" parameterType="Long">
+        delete from workout_exercise_details where detail_id = #{detailId}
+    </delete>
+
+    <delete id="deleteWorkoutExerciseDetailsByDetailIds" parameterType="String">
+        delete from workout_exercise_details where detail_id in 
+        <foreach item="detailId" collection="array" open="(" separator="," close=")">
+            #{detailId}
+        </foreach>
+    </delete>
+</mapper>

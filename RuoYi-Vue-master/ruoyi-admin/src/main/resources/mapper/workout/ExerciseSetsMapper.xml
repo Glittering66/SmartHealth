@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.workout.mapper.ExerciseSetsMapper">
+    
+    <resultMap type="ExerciseSets" id="ExerciseSetsResult">
+        <result property="setId"    column="set_id"    />
+        <result property="detailId"    column="detail_id"    />
+        <result property="setNumber"    column="set_number"    />
+        <result property="weightKg"    column="weight_kg"    />
+        <result property="completedReps"    column="completed_reps"    />
+        <result property="rpeLevel"    column="rpe_level"    />
+        <result property="setDurationSeconds"    column="set_duration_seconds"    />
+        <result property="notes"    column="notes"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="caloriesBurned"    column="calories_burned"    />
+    </resultMap>
+
+    <sql id="selectExerciseSetsVo">
+        select set_id, detail_id, set_number, weight_kg, completed_reps, rpe_level, set_duration_seconds, notes, created_at, calories_burned from exercise_sets
+    </sql>
+
+    <select id="selectExerciseSetsList" parameterType="ExerciseSets" resultMap="ExerciseSetsResult">
+        <include refid="selectExerciseSetsVo"/>
+        <where>  
+            <if test="detailId != null "> and detail_id = #{detailId}</if>
+            <if test="setNumber != null "> and set_number = #{setNumber}</if>
+            <if test="weightKg != null "> and weight_kg = #{weightKg}</if>
+            <if test="completedReps != null "> and completed_reps = #{completedReps}</if>
+            <if test="rpeLevel != null "> and rpe_level = #{rpeLevel}</if>
+            <if test="setDurationSeconds != null "> and set_duration_seconds = #{setDurationSeconds}</if>
+            <if test="notes != null  and notes != ''"> and notes = #{notes}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="caloriesBurned != null "> and calories_burned = #{caloriesBurned}</if>
+        </where>
+    </select>
+    
+    <select id="selectExerciseSetsBySetId" parameterType="Long" resultMap="ExerciseSetsResult">
+        <include refid="selectExerciseSetsVo"/>
+        where set_id = #{setId}
+    </select>
+
+    <insert id="insertExerciseSets" parameterType="ExerciseSets" useGeneratedKeys="true" keyProperty="setId">
+        insert into exercise_sets
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="detailId != null">detail_id,</if>
+            <if test="setNumber != null">set_number,</if>
+            <if test="weightKg != null">weight_kg,</if>
+            <if test="completedReps != null">completed_reps,</if>
+            <if test="rpeLevel != null">rpe_level,</if>
+            <if test="setDurationSeconds != null">set_duration_seconds,</if>
+            <if test="notes != null">notes,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="caloriesBurned != null">calories_burned,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="detailId != null">#{detailId},</if>
+            <if test="setNumber != null">#{setNumber},</if>
+            <if test="weightKg != null">#{weightKg},</if>
+            <if test="completedReps != null">#{completedReps},</if>
+            <if test="rpeLevel != null">#{rpeLevel},</if>
+            <if test="setDurationSeconds != null">#{setDurationSeconds},</if>
+            <if test="notes != null">#{notes},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="caloriesBurned != null">#{caloriesBurned},</if>
+         </trim>
+    </insert>
+
+    <update id="updateExerciseSets" parameterType="ExerciseSets">
+        update exercise_sets
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="detailId != null">detail_id = #{detailId},</if>
+            <if test="setNumber != null">set_number = #{setNumber},</if>
+            <if test="weightKg != null">weight_kg = #{weightKg},</if>
+            <if test="completedReps != null">completed_reps = #{completedReps},</if>
+            <if test="rpeLevel != null">rpe_level = #{rpeLevel},</if>
+            <if test="setDurationSeconds != null">set_duration_seconds = #{setDurationSeconds},</if>
+            <if test="notes != null">notes = #{notes},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="caloriesBurned != null">calories_burned = #{caloriesBurned},</if>
+        </trim>
+        where set_id = #{setId}
+    </update>
+
+    <delete id="deleteExerciseSetsBySetId" parameterType="Long">
+        delete from exercise_sets where set_id = #{setId}
+    </delete>
+
+    <delete id="deleteExerciseSetsBySetIds" parameterType="String">
+        delete from exercise_sets where set_id in 
+        <foreach item="setId" collection="array" open="(" separator="," close=")">
+            #{setId}
+        </foreach>
+    </delete>
+</mapper>

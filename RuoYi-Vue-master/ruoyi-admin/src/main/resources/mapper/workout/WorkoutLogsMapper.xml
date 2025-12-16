@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.workout.mapper.WorkoutLogsMapper">
+    
+    <resultMap type="WorkoutLogs" id="WorkoutLogsResult">
+        <result property="logId"    column="log_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="workoutDate"    column="workout_date"    />
+        <result property="workoutName"    column="workout_name"    />
+        <result property="totalDuration"    column="total_duration"    />
+        <result property="totalCalories"    column="total_calories"    />
+        <result property="notes"    column="notes"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+    </resultMap>
+
+    <sql id="selectWorkoutLogsVo">
+        select log_id, user_id, workout_date, workout_name, total_duration, total_calories, notes, created_at, updated_at from workout_logs
+    </sql>
+
+    <select id="selectWorkoutLogsList" parameterType="WorkoutLogs" resultMap="WorkoutLogsResult">
+        <include refid="selectWorkoutLogsVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="workoutDate != null "> and workout_date = #{workoutDate}</if>
+            <if test="workoutName != null  and workoutName != ''"> and workout_name like concat('%', #{workoutName}, '%')</if>
+            <if test="totalDuration != null "> and total_duration = #{totalDuration}</if>
+            <if test="totalCalories != null "> and total_calories = #{totalCalories}</if>
+            <if test="notes != null  and notes != ''"> and notes = #{notes}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectWorkoutLogsByLogId" parameterType="Long" resultMap="WorkoutLogsResult">
+        <include refid="selectWorkoutLogsVo"/>
+        where log_id = #{logId}
+    </select>
+
+    <insert id="insertWorkoutLogs" parameterType="WorkoutLogs" useGeneratedKeys="true" keyProperty="logId">
+        insert into workout_logs
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="workoutDate != null">workout_date,</if>
+            <if test="workoutName != null">workout_name,</if>
+            <if test="totalDuration != null">total_duration,</if>
+            <if test="totalCalories != null">total_calories,</if>
+            <if test="notes != null">notes,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="workoutDate != null">#{workoutDate},</if>
+            <if test="workoutName != null">#{workoutName},</if>
+            <if test="totalDuration != null">#{totalDuration},</if>
+            <if test="totalCalories != null">#{totalCalories},</if>
+            <if test="notes != null">#{notes},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateWorkoutLogs" parameterType="WorkoutLogs">
+        update workout_logs
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="workoutDate != null">workout_date = #{workoutDate},</if>
+            <if test="workoutName != null">workout_name = #{workoutName},</if>
+            <if test="totalDuration != null">total_duration = #{totalDuration},</if>
+            <if test="totalCalories != null">total_calories = #{totalCalories},</if>
+            <if test="notes != null">notes = #{notes},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where log_id = #{logId}
+    </update>
+
+    <delete id="deleteWorkoutLogsByLogId" parameterType="Long">
+        delete from workout_logs where log_id = #{logId}
+    </delete>
+
+    <delete id="deleteWorkoutLogsByLogIds" parameterType="String">
+        delete from workout_logs where log_id in 
+        <foreach item="logId" collection="array" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+</mapper>
