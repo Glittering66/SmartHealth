@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.workout.mapper.ExerciseMetReferenceMapper">
+    
+    <resultMap type="ExerciseMetReference" id="ExerciseMetReferenceResult">
+        <result property="exerciseId"    column="exercise_id"    />
+        <result property="exerciseName"    column="exercise_name"    />
+        <result property="metValue"    column="met_value"    />
+        <result property="intensityLevel"    column="intensity_level"    />
+        <result property="muscleGroup"    column="muscle_group"    />
+        <result property="description"    column="description"    />
+        <result property="createdAt"    column="created_at"    />
+    </resultMap>
+
+    <sql id="selectExerciseMetReferenceVo">
+        select exercise_id, exercise_name, met_value, intensity_level, muscle_group, description, created_at from exercise_met_reference
+    </sql>
+
+    <select id="selectExerciseMetReferenceList" parameterType="ExerciseMetReference" resultMap="ExerciseMetReferenceResult">
+        <include refid="selectExerciseMetReferenceVo"/>
+        <where>  
+            <if test="exerciseName != null  and exerciseName != ''"> and exercise_name like concat('%', #{exerciseName}, '%')</if>
+            <if test="metValue != null "> and met_value = #{metValue}</if>
+            <if test="intensityLevel != null  and intensityLevel != ''"> and intensity_level = #{intensityLevel}</if>
+            <if test="muscleGroup != null  and muscleGroup != ''"> and muscle_group = #{muscleGroup}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectExerciseMetReferenceByExerciseId" parameterType="Long" resultMap="ExerciseMetReferenceResult">
+        <include refid="selectExerciseMetReferenceVo"/>
+        where exercise_id = #{exerciseId}
+    </select>
+
+    <insert id="insertExerciseMetReference" parameterType="ExerciseMetReference" useGeneratedKeys="true" keyProperty="exerciseId">
+        insert into exercise_met_reference
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="exerciseName != null and exerciseName != ''">exercise_name,</if>
+            <if test="metValue != null">met_value,</if>
+            <if test="intensityLevel != null and intensityLevel != ''">intensity_level,</if>
+            <if test="muscleGroup != null">muscle_group,</if>
+            <if test="description != null">description,</if>
+            <if test="createdAt != null">created_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="exerciseName != null and exerciseName != ''">#{exerciseName},</if>
+            <if test="metValue != null">#{metValue},</if>
+            <if test="intensityLevel != null and intensityLevel != ''">#{intensityLevel},</if>
+            <if test="muscleGroup != null">#{muscleGroup},</if>
+            <if test="description != null">#{description},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateExerciseMetReference" parameterType="ExerciseMetReference">
+        update exercise_met_reference
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="exerciseName != null and exerciseName != ''">exercise_name = #{exerciseName},</if>
+            <if test="metValue != null">met_value = #{metValue},</if>
+            <if test="intensityLevel != null and intensityLevel != ''">intensity_level = #{intensityLevel},</if>
+            <if test="muscleGroup != null">muscle_group = #{muscleGroup},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+        </trim>
+        where exercise_id = #{exerciseId}
+    </update>
+
+    <delete id="deleteExerciseMetReferenceByExerciseId" parameterType="Long">
+        delete from exercise_met_reference where exercise_id = #{exerciseId}
+    </delete>
+
+    <delete id="deleteExerciseMetReferenceByExerciseIds" parameterType="String">
+        delete from exercise_met_reference where exercise_id in 
+        <foreach item="exerciseId" collection="array" open="(" separator="," close=")">
+            #{exerciseId}
+        </foreach>
+    </delete>
+</mapper>
