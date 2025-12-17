@@ -80,7 +80,8 @@ export default {
     return {
       stats: [
         { title: '今日步数', value: '8,462', desc: '目标 10,000 步' },
-        { title: '消耗热量', value: '530 kcal', desc: '运动消耗' },
+        { title: '' +
+            '消耗热量', value: '530 kcal', desc: '运动消耗' },
         { title: '睡眠时长', value: '7.2 h', desc: '昨晚睡眠' },
         { title: '饮水量', value: '1.6 L', desc: '建议 ≥ 2 L' }
       ],
