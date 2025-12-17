@@ -2,19 +2,13 @@ package com.ruoyi.workout.controller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.common.utils.SecurityUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -111,6 +105,19 @@ public class WorkoutLogsController extends BaseController
     @DeleteMapping("/{logId}")
     public AjaxResult deleteWorkoutWithAll(@PathVariable Long logId) {
         return toAjax(workoutLogsService.deleteWorkoutWithAll(logId));
+    }
+
+    /**
+     * 统计时间段内每日的热量消耗和运动时长
+     */
+    @PreAuthorize("@ss.hasPermi('workout:logs:list')")
+    @GetMapping("/statisticCalorieDuration")
+    public AjaxResult statisticCalorieDuration(
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime
+    ) {
+        Map<String, Object> data = workoutLogsService.statisticCalorieAndDuration(startTime, endTime);
+        return success(data);
     }
 
 }

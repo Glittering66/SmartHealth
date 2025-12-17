@@ -1,7 +1,10 @@
 package com.ruoyi.workout.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.workout.mapper.ExerciseSetsMapper;
 import com.ruoyi.workout.mapper.WorkoutExerciseDetailsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,4 +117,29 @@ public class WorkoutLogsServiceImpl implements IWorkoutLogsService
         // 3️⃣ 最后删主记录
         return workoutLogsMapper.deleteWorkoutLogsByLogId(logId);
     }
+
+    @Override
+    public Map<String, Object> statisticCalorieAndDuration(String startTime, String endTime) {
+        Long userId = SecurityUtils.getUserId();
+        List<Map<String, Object>> list = workoutLogsMapper.statisticCalorieAndDuration(userId, startTime, endTime);
+
+        // 拆分数据为三个列表
+        List<String> dateList = new ArrayList<>();
+        List<Double> calorieList = new ArrayList<>();
+        List<Double> durationList = new ArrayList<>();
+
+        for (Map<String, Object> item : list) {
+            dateList.add(item.get("date").toString());
+            // 处理空值（若某天无数据，默认0）
+            calorieList.add(item.get("total_calories") != null ? Double.parseDouble(item.get("total_calories").toString()) : 0);
+            durationList.add(item.get("total_duration") != null ? Double.parseDouble(item.get("total_duration").toString()) : 0);
+        }
+
+        return Map.of(
+                "dateList", dateList,
+                "calorieList", calorieList,
+                "durationList", durationList
+        );
+    }
+
 }

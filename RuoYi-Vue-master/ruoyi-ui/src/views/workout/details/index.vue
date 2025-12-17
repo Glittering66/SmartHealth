@@ -104,7 +104,11 @@ import {
 export default {
   data() {
     return {
-      logId: this.$route.query.logId,
+      // 仅保留有效logId：必须是大于0的数字，否则为null
+      logId: (() => {
+        const id = Number(this.$route.query.logId);
+        return (id && id > 0) ? id : null;
+      })(),
       exerciseList: [],
       dialogVisible: false,
       dialogTitle: "新增运动动作",
@@ -130,13 +134,30 @@ export default {
     };
   },
   created() {
+    if (!this.logId) {
+      this.$message.warning("请从运动记录页面进入详情");
+      this.$router.push("/workout/logs"); // 跳回logs路由
+      return; // 终止后续所有逻辑
+    }
     this.loadExercises();
     this.loadExerciseMetReference(); // 加载reference的动作库数据
   },
   methods: {
     async loadExercises() {
-      const res = await listDetails(this.logId)
-      this.exerciseList = res.rows || []
+      // 若logId突然失效（如用户手动修改URL），直接返回
+      if (!this.logId) {
+        this.exerciseList = [];
+        return;
+      }
+
+      try {
+        const res = await listDetails(this.logId);
+        this.exerciseList = res.rows || [];
+      } catch (error) {
+        this.$message.error("加载运动动作列表失败：" + (error.message || "未知错误"));
+        this.exerciseList = [];
+        console.error("加载失败详情：", error);
+      }
     },
 
     // 步骤2：修改为调用reference的API方法（和reference页面用同一接口）

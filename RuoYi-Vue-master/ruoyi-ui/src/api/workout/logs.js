@@ -9,6 +9,15 @@ export function listLogs(query) {
   })
 }
 
+// 统计每日热量消耗和运动时长
+export function statisticCalorieDuration(query) {
+  return request({
+    url: '/workout/logs/statisticCalorieDuration',
+    method: 'get',
+    params: query
+  });
+}
+
 // 查询运动记录详细
 export function getLogs(logId) {
   return request({
@@ -42,3 +51,4 @@ export function delLogs(logId) {
     method: 'delete'
   })
 }
+

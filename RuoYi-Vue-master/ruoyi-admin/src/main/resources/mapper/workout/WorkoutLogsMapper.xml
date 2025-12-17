@@ -88,4 +88,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{logId}
         </foreach>
     </delete>
+
+    <select id="statisticCalorieAndDuration" resultType="java.util.Map">
+        SELECT
+        DATE(created_at) AS date,
+        SUM(total_calories) AS total_calories, -- 每日总热量
+        SUM(total_duration) AS total_duration  -- 每日总时长
+        FROM workout_logs
+        WHERE 1=1
+        AND user_id = #{userId} -- 过滤当前用户
+        <if test="startTime != null and startTime != ''">
+            AND created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND created_at &lt;= #{endTime}
+        </if>
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at) ASC
+    </select>
 </mapper>

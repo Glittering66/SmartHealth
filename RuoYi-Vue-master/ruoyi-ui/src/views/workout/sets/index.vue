@@ -14,10 +14,10 @@
 
     <!-- 组记录列表 -->
     <el-table :data="setList" border style="width: 100%">
-      <el-table-column prop="setNum" label="组号" width="150" />
-      <el-table-column prop="weight" label="重量(kg)" width="150" />
-      <el-table-column prop="actualReps" label="实际次数" width="150" />
-      <el-table-column prop="rpe" label="RPE" width="150" />
+      <el-table-column prop="setNumber" label="组号" width="150" />
+      <el-table-column prop="weightKg" label="重量(kg)" width="150" />
+      <el-table-column prop="completedReps" label="实际次数" width="150" />
+      <el-table-column prop="rpeLevel" label="RPE" width="150" />
       <el-table-column prop="notes" label="备注" />
       <el-table-column label="操作" width="300">
         <template slot-scope="scope">
@@ -34,24 +34,28 @@
     <!-- 新增/编辑组弹窗 -->
     <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
       <el-form :model="setForm" label-width="100px">
-        <el-form-item label="组号" prop="setNum">
-          <el-input-number v-model="setForm.setNum" :min="1" />
+        <el-form-item label="组号">
+          <el-input-number v-model="setForm.setNumber" :min="1" />
         </el-form-item>
-        <el-form-item label="重量(kg)" prop="weight">
-          <el-input-number v-model="setForm.weight" :min="0" />
+
+        <el-form-item label="重量(kg)">
+          <el-input-number v-model="setForm.weightKg" :min="0" />
         </el-form-item>
-        <el-form-item label="实际次数" prop="actualReps">
-          <el-input-number v-model="setForm.actualReps" :min="1" />
+
+        <el-form-item label="实际次数">
+          <el-input-number v-model="setForm.completedReps" :min="1" />
         </el-form-item>
-        <el-form-item label="RPE" prop="rpe">
-          <el-select v-model="setForm.rpe" placeholder="请选择RPE">
-            <el-option label="6" value="6" />
-            <el-option label="7" value="7" />
-            <el-option label="8" value="8" />
-            <el-option label="9" value="9" />
-            <el-option label="10" value="10" />
+
+        <el-form-item label="RPE">
+          <el-select v-model="setForm.rpeLevel">
+            <el-option label="6" :value="6" />
+            <el-option label="7" :value="7" />
+            <el-option label="8" :value="8" />
+            <el-option label="9" :value="9" />
+            <el-option label="10" :value="10" />
           </el-select>
         </el-form-item>
+
         <el-form-item label="备注" prop="notes">
           <el-input v-model="setForm.notes" placeholder="请输入备注" />
         </el-form-item>
@@ -65,34 +69,66 @@
 </template>
 
 <script>
+import {
+  listSets,
+  addSet,
+  updateSet,
+  deleteSetById
+} from '@/api/workout/sets'
+
 export default {
   data() {
     return {
-      detailId: this.$route.query.detailId, // 接收动作ID
+      // 仅保留有效detailId：必须是大于0的数字，否则为null
+      detailId: (() => {
+        const id = Number(this.$route.query.detailId);
+        return (id && id > 0) ? id : null;
+      })(),
       setList: [], // 当前动作的组记录列表
       dialogVisible: false,
       dialogTitle: "新增组记录",
       setForm: {
-        setId: "",
+        setId: null,
         detailId: this.$route.query.detailId,
-        setNum: 1,
-        weight: 0,
-        actualReps: 12,
-        rpe: "8",
-        notes: ""
+        setNumber: 1,
+        weightKg: 0,
+        completedReps: 12,
+        rpeLevel: 8,
+        setDurationSeconds: null,
+        notes: '',
+        caloriesBurned: null
       }
     };
   },
   created() {
+    // 核心：校验detailId有效性，无效则跳回Details界面
+    if (!this.detailId) {
+      this.$message.warning("请从运动动作详情页面进入组记录");
+      // 跳回Details界面（若需要携带logId，可补充：`/workout/details?logId=${xxx}`，后续可优化）
+      this.$router.push("/workout/details");
+      return; // 终止后续所有逻辑
+    }
+
+    // 只有detailId有效时，才加载组记录数据
     this.loadSets();
   },
   methods: {
     // 加载当前动作的组记录
-    loadSets() {
-      const storedSets = localStorage.getItem("exercise_sets");
-      const allSets = storedSets ? JSON.parse(storedSets) : [];
-      // 统一detailId类型为字符串，避免类型不匹配导致过滤失败
-      this.setList = allSets.filter(item => String(item.detailId) === String(this.detailId));
+    async loadSets() {
+      // 二次校验：若detailId无效，直接清空数据
+      if (!this.detailId) {
+        this.setList = [];
+        return;
+      }
+
+      try {
+        const res = await listSets(this.detailId);
+        this.setList = res.rows || [];
+      } catch (error) {
+        this.$message.error("加载组记录列表失败：" + (error.message || "未知错误"));
+        this.setList = [];
+        console.error("加载失败详情：", error);
+      }
     },
 
     // 保存组记录到本地
@@ -102,158 +138,131 @@ export default {
 
     // 打开新增组弹窗
     openAddSetDialog() {
-      this.dialogTitle = "新增组记录";
+      this.dialogTitle = '新增组记录'
       this.setForm = {
-        setId: `set_${Date.now()}`,
+        setId: null,
         detailId: this.detailId,
-        setNum: this.setList.length + 1,
-        weight: 0,
-        actualReps: 12,
-        rpe: "8",
-        notes: ""
-      };
-      this.dialogVisible = true;
+        setNumber: this.setList.length + 1, // ✅ 必传
+        weightKg: 0,
+        completedReps: 12,
+        rpeLevel: 8,
+        setDurationSeconds: null,
+        notes: ''
+      }
+      this.dialogVisible = true
     },
 
     // 编辑组记录
     editSet(row) {
-      this.dialogTitle = "编辑组记录";
-      this.setForm = { ...row };
-      this.dialogVisible = true;
+      this.dialogTitle = '编辑组记录'
+      this.setForm = { ...row }   // setId 已存在
+      this.dialogVisible = true
     },
 
     // 保存组记录
-    saveSet() {
-      const storedSets = localStorage.getItem("exercise_sets");
-      const allSets = storedSets ? JSON.parse(storedSets) : [];
-
-      // 判断是新增还是编辑
-      const index = allSets.findIndex(item => item.setId === this.setForm.setId);
-      if (index > -1) {
-        allSets[index] = this.setForm;
+    async saveSet() {
+      if (this.setForm.setId) {
+        // 编辑
+        await updateSet(this.setForm)
+        this.$message.success('修改成功')
       } else {
-        allSets.push(this.setForm);
+        // 新增
+        await addSet(this.setForm)
+
+        this.$message.success('新增成功')
       }
 
-      this.saveSets(allSets);
-      this.loadSets();
-      this.dialogVisible = false;
-      this.$message.success("保存成功");
+      this.dialogVisible = false
+      this.loadSets()
 
-      // 新增：计算并更新热量消耗
-      this.calculateAndUpdateCalories();
+      // 如需同步热量
+      this.calculateAndUpdateCalories()
     },
 
     // 计算并更新热量的方法
+    // 替换原有的 calculateAndUpdateCalories 方法（核心修改：从后端接口取数）
     async calculateAndUpdateCalories() {
-      try {
-        // 1. 获取当前动作详情，拿到所属的logId
-        const storedExercises = localStorage.getItem("workout_exercise_details");
-        const allExercises = storedExercises ? JSON.parse(storedExercises) : [];
-        const currentExercise = allExercises.find(item => String(item.detailId) === String(this.detailId));
-        if (!currentExercise) {
-          this.$message.warning("未找到关联的动作详情");
-          return;
-        }
-
-        // 2. 关键：获取当前logId下的所有动作详情（多个details）
-        const logId = Number(currentExercise.logId); // 统一为数字类型
-        const logExercises = allExercises.filter(item => Number(item.logId) === logId); // 该日志下的所有details
-        console.log(`当前日志${logId}下的动作详情数量：`, logExercises.length); // 调试日志
-        if (logExercises.length === 0) {
-          this.$message.warning("未找到该日志下的任何动作详情");
-          return;
-        }
-
-        // 3. 获取所有组记录（用于匹配每个detail的sets）
-        const storedSets = localStorage.getItem("exercise_sets");
-        const allSets = storedSets ? JSON.parse(storedSets) : [];
-
-        // 4. 初始化总热量和总时长（必须初始化为0，确保累加正确）
-        let totalLogCalories = 0; // 整个日志的总热量
-        let totalLogMinutes = 0; // 整个日志的总时长
-
-        // 5. 遍历该日志下的每个detail，计算每个detail的热量并累加（重点：不跳过任何detail）
-        logExercises.forEach((detail, index) => {
-          console.log(`正在计算第${index+1}个动作详情（detailId：${detail.detailId}）的热量`); // 调试日志
-          // 5.1 获取当前detail对应的所有sets（多个sets）
-          const exerciseSets = allSets.filter(item => String(item.detailId) === String(detail.detailId));
-          console.log(`动作详情${detail.detailId}对应的sets数量：`, exerciseSets.length); // 调试日志
-
-          // 5.2 计算当前detail的热量（即使没有sets，也给基础热量，不跳过）
-          // 体重（兜底60kg）
-          const userWeight = Number(this.$store.state.user?.weight) || 60;
-          // MET值（从detail获取，兜底5）
-          const metValue = Number(detail.met) || 5;
-          // 时长：每组默认5分钟，无sets则按1组计算（避免时长为0）
-          const perSetMinutes = 5;
-          const setCount = exerciseSets.length || 1; // 无sets则默认1组
-          const detailMinutes = setCount * perSetMinutes;
-          const timeHour = detailMinutes / 60;
-
-          // 力量运动消耗：总重量（weight×actualReps）×系数0.1；无sets则总重量为0
-          const totalWeight = exerciseSets.reduce((sum, set) => {
-            const weight = Number(set.weight) || 0;
-            const reps = Number(set.actualReps) || 0;
-            return sum + (weight * reps);
-          }, 0);
-          const strengthCalories = totalWeight * 0.1;
-
-          // 当前detail的热量（即使计算结果为0，也兜底5kcal，确保有基础热量）
-          const detailCalories = Math.round(metValue * userWeight * timeHour + strengthCalories) || 5;
-          console.log(`动作详情${detail.detailId}的热量：`, detailCalories); // 调试日志
-
-          // 5.3 累加到日志的总热量和总时长（关键：不管有没有sets，都累加）
-          totalLogCalories += detailCalories;
-          totalLogMinutes += detailMinutes;
-        });
-
-        // 6. 最终兜底：若总热量仍为0（极端情况），设置最小热量为5kcal
-        totalLogCalories = totalLogCalories || 5;
-        console.log(`日志${logId}的总热量：`, totalLogCalories); // 调试日志
-
-        // 7. 更新日志的热量和时长
-        const storedLogs = localStorage.getItem("workout_logs");
-        let allLogs = storedLogs ? JSON.parse(storedLogs) : [];
-        const logIndex = allLogs.findIndex(item => Number(item.logId) === logId);
-        if (logIndex === -1) {
-          this.$message.warning("未找到关联的运动日志");
-          return;
-        }
-
-        // 7.1 更新日志的总热量和总时长
-        allLogs[logIndex].totalCalories = totalLogCalories;
-        allLogs[logIndex].totalDuration = totalLogMinutes;
-        // 保存到localStorage
-        localStorage.setItem("workout_logs", JSON.stringify(allLogs));
-
-        // 8. 触发事件总线，通知logs页面刷新数据
-        this.$bus.$emit("logsDataUpdated");
-
-        this.$message.success(`热量已同步更新，总热量：${totalLogCalories}kcal（共${logExercises.length}个动作详情）`);
-      } catch (error) {
-        console.error("热量计算失败：", error);
-        this.$message.error("热量更新失败，请重试");
-      }
+      // try {
+      //   // ========== 1. 新增：调用后端接口，获取当前detailId对应的详情（含logId） ==========
+      //   // 需封装后端接口：根据detailId查询单个动作详情（返回含logId的对象）
+      //   const detailRes = await getDetailById(this.detailId);
+      //   const currentExercise = detailRes.data; // 后端返回的当前动作详情（含logId）
+      //   if (!currentExercise) {
+      //     this.$message.warning("未找到关联的动作详情");
+      //     return;
+      //   }
+      //   const logId = currentExercise.logId || currentExercise.log_id; // 兼容驼峰/下划线
+      //
+      //   // ========== 2. 新增：调用后端接口，获取当前logId下的所有动作详情 ==========
+      //   // 需封装后端接口：根据logId查询所有动作详情
+      //   const detailsRes = await listDetailsByLogId(logId);
+      //   const logExercises = detailsRes.rows || []; // 该日志下的所有details（后端数据）
+      //   if (logExercises.length === 0) {
+      //     this.$message.warning("未找到该日志下的任何动作详情");
+      //     return;
+      //   }
+      //
+      //   // ========== 3. 新增：调用后端接口，获取所有组记录（或当前logId下的所有sets） ==========
+      //   // 需封装后端接口：根据logId查询所有组记录
+      //   const setsRes = await listSetsByLogId(logId);
+      //   const allSets = setsRes.rows || []; // 后端的组记录数据
+      //
+      //   // ========== 后续逻辑不变（仅将原LocalStorage的变量替换为后端接口返回的数据） ==========
+      //   let totalLogCalories = 0;
+      //   let totalLogMinutes = 0;
+      //
+      //   logExercises.forEach((detail, index) => {
+      //     // 注意：后端返回的字段可能是下划线（detail_id），需转为驼峰或直接用下划线匹配
+      //     const detailId = detail.detailId || detail.detail_id;
+      //     const exerciseSets = allSets.filter(item => (item.detailId || item.detail_id) === detailId);
+      //
+      //     // 体重、MET值从后端detail中获取（替换原LocalStorage的字段）
+      //     const userWeight = Number(this.$store.state.user?.weight) || 60;
+      //     const metValue = Number(detail.metValue || detail.met_value) || 5;
+      //
+      //     // 原有热量计算逻辑不变...
+      //     const perSetMinutes = 5;
+      //     const setCount = exerciseSets.length || 1;
+      //     const detailMinutes = setCount * perSetMinutes;
+      //     const timeHour = detailMinutes / 60;
+      //
+      //     const totalWeight = exerciseSets.reduce((sum, set) => {
+      //       const weight = Number(set.weightKg || set.weight_kg) || 0;
+      //       const reps = Number(set.completedReps || set.completed_reps) || 0;
+      //       return sum + (weight * reps);
+      //     }, 0);
+      //     const strengthCalories = totalWeight * 0.1;
+      //
+      //     const detailCalories = Math.round(metValue * userWeight * timeHour + strengthCalories) || 5;
+      //     totalLogCalories += detailCalories;
+      //     totalLogMinutes += detailMinutes;
+      //   });
+      //
+      //   // ========== 4. 替换：更新日志的热量和时长（调用后端接口，而非LocalStorage） ==========
+      //   // 需封装后端接口：更新日志的总热量和总时长
+      //   await updateLogCaloriesAndDuration({
+      //     logId: logId,
+      //     totalCalories: totalLogCalories || 5,
+      //     totalDuration: totalLogMinutes
+      //   });
+      //
+      //   // 触发事件总线，通知logs页面刷新数据
+      //   this.$bus.$emit("logsDataUpdated");
+      //   this.$message.success(`热量已同步更新，总热量：${totalLogCalories || 5}kcal（共${logExercises.length}个动作详情）`);
+      //
+      // } catch (error) {
+      //   console.error("热量计算失败：", error);
+      //   this.$message.error("热量更新失败，请重试");
+      // }
     },
 
     // 删除组记录
-    deleteSet(row) {
-      this.$confirm("确定删除该组记录吗？", "提示", { type: "warning" })
-        .then(() => {
-          const storedSets = localStorage.getItem("exercise_sets");
-          const allSets = storedSets ? JSON.parse(storedSets) : [];
-          const newSets = allSets.filter(item => item.setId !== row.setId);
-          this.saveSets(newSets);
-          this.loadSets();
-          this.$message.success("删除成功");
-
-          // 新增：删除后重新计算热量
-          this.calculateAndUpdateCalories();
-        })
-        .catch(() => {
-          this.$message.info("已取消删除");
-        });
+    async deleteSet(row) {
+      await this.$confirm('确定删除该组记录吗？', '提示', { type: 'warning' })
+      await deleteSetById(row.setId)
+      this.$message.success('删除成功')
+      this.loadSets()
+      this.calculateAndUpdateCalories()
     }
   }
 };

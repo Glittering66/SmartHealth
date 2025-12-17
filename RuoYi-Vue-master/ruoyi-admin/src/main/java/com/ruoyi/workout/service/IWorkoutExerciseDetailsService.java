@@ -65,5 +65,4 @@ public interface IWorkoutExerciseDetailsService
      * 级联删除训练项目（含 sets）
      */
     int deleteDetailWithSets(Long detailId);
-
 }

@@ -1,6 +1,8 @@
 package com.ruoyi.workout.service;
 
 import java.util.List;
+import java.util.Map;
+
 import com.ruoyi.workout.domain.WorkoutLogs;
 
 /**
@@ -60,4 +62,10 @@ public interface IWorkoutLogsService
     public int deleteWorkoutLogsByLogId(Long logId);
 
     int deleteWorkoutWithAll(Long logId);
+
+    /**
+     * 按日期统计运动
+     */
+    Map<String, Object> statisticCalorieAndDuration(String startTime, String endTime);
+
 }
