@@ -93,4 +93,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{detailId}
         </foreach>
     </delete>
+
+    <delete id="deleteByLogId" parameterType="Long">
+        delete from workout_exercise_details where log_id = #{logId}
+    </delete>
+
 </mapper>

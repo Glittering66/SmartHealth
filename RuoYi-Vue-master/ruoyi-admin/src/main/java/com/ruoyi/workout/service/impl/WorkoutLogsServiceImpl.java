@@ -1,11 +1,15 @@
 package com.ruoyi.workout.service.impl;
 
 import java.util.List;
+
+import com.ruoyi.workout.mapper.ExerciseSetsMapper;
+import com.ruoyi.workout.mapper.WorkoutExerciseDetailsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.workout.mapper.WorkoutLogsMapper;
 import com.ruoyi.workout.domain.WorkoutLogs;
 import com.ruoyi.workout.service.IWorkoutLogsService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 运动记录Service业务层处理
@@ -18,6 +22,12 @@ public class WorkoutLogsServiceImpl implements IWorkoutLogsService
 {
     @Autowired
     private WorkoutLogsMapper workoutLogsMapper;
+
+    @Autowired
+    private WorkoutExerciseDetailsMapper detailMapper;
+
+    @Autowired
+    private ExerciseSetsMapper setMapper;
 
     /**
      * 查询运动记录
@@ -88,6 +98,20 @@ public class WorkoutLogsServiceImpl implements IWorkoutLogsService
     @Override
     public int deleteWorkoutLogsByLogId(Long logId)
     {
+        return workoutLogsMapper.deleteWorkoutLogsByLogId(logId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteWorkoutWithAll(Long logId) {
+
+        // 1️⃣ 先删组记录
+        setMapper.deleteByLogId(logId);
+
+        // 2️⃣ 再删动作详情
+        detailMapper.deleteByLogId(logId);
+
+        // 3️⃣ 最后删主记录
         return workoutLogsMapper.deleteWorkoutLogsByLogId(logId);
     }
 }

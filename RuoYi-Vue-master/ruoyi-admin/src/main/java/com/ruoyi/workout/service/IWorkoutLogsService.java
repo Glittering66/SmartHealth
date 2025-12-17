@@ -58,4 +58,6 @@ public interface IWorkoutLogsService
      * @return 结果
      */
     public int deleteWorkoutLogsByLogId(Long logId);
+
+    int deleteWorkoutWithAll(Long logId);
 }

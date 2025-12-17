@@ -2,6 +2,7 @@ package com.ruoyi.workout.mapper;
 
 import java.util.List;
 import com.ruoyi.workout.domain.ExerciseSets;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 项目组数Mapper接口
@@ -9,6 +10,7 @@ import com.ruoyi.workout.domain.ExerciseSets;
  * @author ruoyi
  * @date 2025-12-16
  */
+@Mapper
 public interface ExerciseSetsMapper 
 {
     /**
@@ -58,4 +60,6 @@ public interface ExerciseSetsMapper
      * @return 结果
      */
     public int deleteExerciseSetsBySetIds(Long[] setIds);
+
+    public int deleteByLogId(Long logId);
 }

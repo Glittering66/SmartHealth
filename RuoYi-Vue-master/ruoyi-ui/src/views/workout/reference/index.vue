@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
-    <h2>动作库参考</h2>
+    <h2>运动动作库参考</h2>
     <el-card class="action-library-card">
-      <el-input v-model="searchAction" placeholder="搜索动作名称" style="margin-bottom: 20px" />
+      <el-input v-model="searchAction" placeholder="搜索运动动作名称" style="margin-bottom: 20px" />
       <el-table :data="filteredActions" border style="width: 100%">
-        <el-table-column prop="exerciseName" label="动作名称" />
+        <el-table-column prop="exerciseName" label="运动动作名称" />
         <el-table-column prop="muscleGroup" label="目标肌群" width="150" />
         <el-table-column prop="intensityLevel" label="难度" width="150" />
         <el-table-column prop="metValue" label="MET值" width="150" />

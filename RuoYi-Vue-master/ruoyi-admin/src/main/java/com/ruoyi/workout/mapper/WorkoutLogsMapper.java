@@ -2,6 +2,7 @@ package com.ruoyi.workout.mapper;
 
 import java.util.List;
 import com.ruoyi.workout.domain.WorkoutLogs;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 运动记录Mapper接口
@@ -9,6 +10,7 @@ import com.ruoyi.workout.domain.WorkoutLogs;
  * @author ruoyi
  * @date 2025-12-16
  */
+@Mapper
 public interface WorkoutLogsMapper 
 {
     /**

@@ -12,13 +12,13 @@
     <el-card class="filter-card">
       <el-form inline :model="filterForm">
         <el-form-item label="运动日期时间">
-          <!-- 修改1：筛选区域改为日期时间范围选择（datetimerange），添加格式配置 -->
+          <!-- 修改1：筛选区域改为日期时间范围选择（datetime range），添加格式配置 -->
           <el-date-picker
             v-model="filterForm.dateRange"
-            type="datetimerange"
+            type="datetime range"
             range-separator="至"
-            start-placeholder="开始日期时间"
-            end-placeholder="结束日期时间"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
             format="yyyy-MM-dd HH:mm:ss"
             value-format="yyyy-MM-dd HH:mm:ss"
           />
@@ -166,15 +166,17 @@
 </template>
 
 <script>
+// 问题3修复：补充导入 addLogs、updateLogs（需确保 API 文件中导出了这两个方法）
+import {delLogs, listLogs, addLogs, updateLogs} from "@/api/workout/logs";
+import { delDetails } from "@/api/workout/details";
+import { delSets } from "@/api/workout/sets";
+
 export default {
   data() {
     return {
-      filterForm: {
-        dateRange: [],
-        logName: ""
-      },
-      allLogs: [], // 所有运动记录（localStorage）
-      filteredLogs: [], // 筛选后的记录
+      filterForm: { dateRange: [], logName: "" },
+      allLogs: [], // 从数据库获取的所有记录
+      filteredLogs: [],
       addDialogVisible: false,
       editDialogVisible: false,
       addForm: {
@@ -182,10 +184,13 @@ export default {
         logName: '',
         totalDuration: '',
         totalCalories: 0,
-        notes: ''
+        notes: '',
+        userId: localStorage.getItem('userId') || '' // 保留用户ID
       },
       editForm: {
+        // 问题5修复：添加 userId 字段
         logId: '',
+        userId: '',
         logDate: '',
         logName: '',
         totalDuration: '',
@@ -205,6 +210,8 @@ export default {
     };
   },
   created() {
+    // 初始化用户ID（从登录态获取，确保新增时能关联用户）
+    this.addForm.userId = localStorage.getItem('userId') || '';
     this.loadLogs();
     // 监听事件总线的更新通知（Vue2）
     this.$bus.$on("logsDataUpdated", () => {
@@ -232,21 +239,38 @@ export default {
     }
   },
   methods: {
-    // 加载本地运动记录
-    loadLogs() {
-      const storedLogs = localStorage.getItem("workout_logs");
-      this.allLogs = storedLogs ? JSON.parse(storedLogs) : [];
-      // 确保logId等字段为数字类型，避免匹配失败
-      this.allLogs = this.allLogs.map(log => ({
-        ...log,
-        logId: Number(log.logId),
-        totalDuration: Number(log.totalDuration) || 0,
-        totalCalories: Number(log.totalCalories) || 0
-      }));
-      this.filteredLogs = [...this.allLogs];
+    // 问题1修复：修改 loadLogs 方法，添加兜底处理，确保 data 是数组
+    async loadLogs() {
+      try {
+        // 调用 API 查询所有运动记录（可传筛选参数，此处先查全部）
+        const response = await listLogs({});
+        // 步骤1：兼容后端返回格式，兜底为数组（根据后端实际格式调整）
+        // 兼容：response.data / response.rows / 直接返回数组 / 空数据
+        const rawData = response?.data || response?.rows || response || [];
+        // 步骤2：确保是数组（防止后端返回非数组）
+        const safeData = Array.isArray(rawData) ? rawData : [];
+
+        // 字段映射：确保前端字段与后端返回一致（后端下划线转前端驼峰）
+        this.allLogs = safeData.map(log => ({
+          logId: log.logId || log.log_id || '',
+          userId: log.userId || log.user_id || '',
+          logDate: log.workoutDate || log.workout_date || '',
+          logName: log.workoutName || log.workout_name || '',
+          totalDuration: log.totalDuration || log.total_duration || 0,
+          totalCalories: log.totalCalories || log.total_calories || 0,
+          notes: log.notes || ''
+        }));
+
+        this.filteredLogs = [...this.allLogs]; // 初始化筛选列表
+      } catch (error) {
+        this.$message.error("接口请求失败：" + (error.message || "网络异常"));
+        // 步骤3：接口报错时，兜底设为空数组
+        this.allLogs = [];
+        this.filteredLogs = [];
+      }
     },
 
-    // 保存运动记录到本地
+    // 保存运动记录到本地（保留，可作为兜底）
     saveLogs() {
       localStorage.setItem("workout_logs", JSON.stringify(this.allLogs));
     },
@@ -300,44 +324,58 @@ export default {
     // 删除运动记录+关联的details+关联的sets
     deleteLog(row) {
       this.$confirm("确定删除该记录及关联动作和组记录吗？", "提示", { type: "warning" })
-        .then(() => {
-          // 1. 删除当前日志
-          this.allLogs = this.allLogs.filter(item => item.logId !== row.logId);
-          this.saveLogs();
-          this.filteredLogs = [...this.allLogs];
+        // 关键：将回调改为async，支持异步API调用
+        .then(async () => {
+          try {
+            // 问题2修复：定义 logId 变量（row.logId）
+            const logId = row.logId;
+            // ================ 新增：同步删除数据库数据 ================
+            // 依次调用3个删除API（需确保后端API接收logId参数）
+            await delLogs(row.logId);
+            this.$message.success("删除成功");
+            this.loadLogs();
 
-          // 2. 获取所有动作详情，筛选出该日志关联的详情（要删除的）
-          const storedExercises = localStorage.getItem("workout_exercise_details");
-          const exercises = storedExercises ? JSON.parse(storedExercises) : [];
-          // 统一logId类型为数字，避免匹配失败
-          const deletedDetails = exercises.filter(item => Number(item.logId) === Number(row.logId));
-          const newExercises = exercises.filter(item => Number(item.logId) !== Number(row.logId));
-          // 保存删除后的详情
-          localStorage.setItem("workout_exercise_details", JSON.stringify(newExercises));
+            // ================ 原有本地存储删除逻辑（保持不变） ================
+            // 1. 删除当前日志
+            this.allLogs = this.allLogs.filter(item => item.logId !== row.logId);
+            this.saveLogs();
+            this.filteredLogs = [...this.allLogs];
 
-          // 3. 获取要删除的详情的detailId（用于删除关联的sets）
-          // 统一detailId类型为字符串，避免类型不匹配
-          const deletedDetailIds = deletedDetails.map(item => String(item.detailId));
+            // 2. 获取所有动作详情，筛选出该日志关联的详情（要删除的）
+            const storedExercises = localStorage.getItem("workout_exercise_details");
+            const exercises = storedExercises ? JSON.parse(storedExercises) : [];
+            // 统一logId类型为数字，避免匹配失败
+            const deletedDetails = exercises.filter(item => Number(item.logId) === Number(row.logId));
+            const newExercises = exercises.filter(item => Number(item.logId) !== Number(row.logId));
+            // 保存删除后的详情
+            localStorage.setItem("workout_exercise_details", JSON.stringify(newExercises));
 
-          // 4. 获取所有组记录，删除关联的sets
-          const storedSets = localStorage.getItem("exercise_sets");
-          const allSets = storedSets ? JSON.parse(storedSets) : [];
-          // 过滤掉属于被删除详情的sets
-          const newSets = allSets.filter(item => !deletedDetailIds.includes(String(item.detailId)));
-          // 保存删除后的sets
-          localStorage.setItem("exercise_sets", JSON.stringify(newSets));
+            // 3. 获取要删除的详情的detailId（用于删除关联的sets）
+            // 统一detailId类型为字符串，避免类型不匹配
+            const deletedDetailIds = deletedDetails.map(item => String(item.detailId));
 
-          this.$message.success("删除成功（含关联动作和组记录）");
+            // 4. 获取所有组记录，删除关联的sets
+            const storedSets = localStorage.getItem("exercise_sets");
+            const allSets = storedSets ? JSON.parse(storedSets) : [];
+            // 过滤掉属于被删除详情的sets
+            const newSets = allSets.filter(item => !deletedDetailIds.includes(String(item.detailId)));
+            // 保存删除后的sets
+            localStorage.setItem("exercise_sets", JSON.stringify(newSets));
+
+            this.$message.success("删除成功（含关联动作、组记录及数据库数据）");
+          } catch (error) {
+            // 捕获API调用异常
+            this.$message.error("删除失败：" + (error.message || "网络异常"));
+          }
         })
         .catch(() => {
           this.$message.info("已取消删除");
         });
     },
 
-    // 新增：获取当前最大ID
+    // 新增：获取当前最大ID（保留，本地逻辑）
     getMaxLogId() {
-      if (this.allLogs.length === 0) return 0; // 无记录时，最大ID为0
-      // 从现有记录中提取logId，转换为数字后取最大值
+      if (this.allLogs.length === 0) return 0;
       const ids = this.allLogs.map(item => Number(item.logId));
       return Math.max(...ids);
     },
@@ -348,15 +386,18 @@ export default {
       this.resetAddForm();
     },
 
-    // 新增弹窗：重置表单
+    // 问题4修复：重置新增表单时，保留 userId
     resetAddForm() {
       this.$refs.addFormRef && this.$refs.addFormRef.resetFields();
+      // 保留 userId，不被清空
+      const userId = this.addForm.userId;
       this.addForm = {
         logDate: '',
         logName: '',
         totalDuration: '',
         totalCalories: 0,
-        notes: ''
+        notes: '',
+        userId: userId // 恢复 userId
       };
       // 清除路由中的actionName参数
       if (this.$route.query.actionName) {
@@ -367,32 +408,42 @@ export default {
     },
 
     // 新增弹窗：提交表单
-    submitAddForm() {
-      this.$refs.addFormRef.validate((valid) => {
+    async submitAddForm() {
+      this.$refs.addFormRef.validate(async (valid) => {
         if (valid) {
-          // 自增ID = 最大ID + 1
-          const maxId = this.getMaxLogId();
-          const newLogId = maxId + 1; // 自增逻辑
+          try {
+            // 字段映射：前端驼峰 → 数据库下划线（匹配后端接收格式）
+            const addData = {
+              userId: this.addForm.userId,
+              workoutDate: this.addForm.logDate,
+              workoutName: this.addForm.logName,
+              totalDuration: Number(this.addForm.totalDuration),
+              totalCalories: Number(this.addForm.totalCalories) || 0,
+              notes: this.addForm.notes || ""
+            };
 
-          // 组装新记录
-          const newLog = {
-            logId: newLogId,
-            ...this.addForm
-          };
-
-          // 保存到本地并刷新列表
-          this.allLogs.unshift(newLog);
-          this.saveLogs();
-          this.filteredLogs = [...this.allLogs];
-          this.addDialogVisible = false;
-          this.$message.success('新增成功！');
+            // 调用新增 API，插入数据库
+            const response = await addLogs(addData);
+            if (response.code === 200) {
+              this.$message.success('新增运动记录成功（已插入数据库）');
+              // 重新加载数据，刷新列表（从数据库获取最新记录）
+              this.loadLogs();
+              this.addDialogVisible = false;
+              this.resetAddForm(); // 重置表单
+            } else {
+              this.$message.error("新增失败：" + response.msg);
+            }
+          } catch (error) {
+            this.$message.error("新增请求失败：" + (error.message || "网络异常"));
+          }
         }
       });
     },
 
-    // 编辑弹窗：打开弹窗
+    // 编辑弹窗：打开弹窗（补充：赋值 userId）
     openEditDialog(row) {
-      this.editForm = { ...row };
+      // 赋值 userId（从 row 中获取）
+      this.editForm = { ...row, userId: row.userId || localStorage.getItem('userId') };
       this.editDialogVisible = true;
     },
 
@@ -401,6 +452,7 @@ export default {
       this.$refs.editFormRef && this.$refs.editFormRef.resetFields();
       this.editForm = {
         logId: '',
+        userId: '', // 保留 userId 字段
         logDate: '',
         logName: '',
         totalDuration: '',
@@ -409,17 +461,31 @@ export default {
       };
     },
 
-    // 编辑弹窗：提交修改
-    submitEditForm() {
-      this.$refs.editFormRef.validate((valid) => {
+    // 问题6修复：编辑提交添加 try/catch，判断响应格式
+    async submitEditForm() {
+      this.$refs.editFormRef.validate(async (valid) => {
         if (valid) {
-          const index = this.allLogs.findIndex(item => item.logId === this.editForm.logId);
-          if (index !== -1) {
-            this.allLogs.splice(index, 1, { ...this.editForm });
-            this.saveLogs();
-            this.filteredLogs = [...this.allLogs];
-            this.editDialogVisible = false;
-            this.$message.success('修改成功！');
+          try {
+            const editData = {
+              logId: this.editForm.logId,
+              userId: this.editForm.userId,
+              workoutDate: this.editForm.logDate,
+              workoutName: this.editForm.logName,
+              totalDuration: Number(this.editForm.totalDuration),
+              totalCalories: Number(this.editForm.totalCalories),
+              notes: this.editForm.notes
+            };
+
+            const response = await updateLogs(editData);
+            if (response.code === 200) {
+              this.$message.success('修改成功（已更新数据库）');
+              this.loadLogs();
+              this.editDialogVisible = false;
+            } else {
+              this.$message.error("修改失败：" + response.msg);
+            }
+          } catch (error) {
+            this.$message.error("修改请求失败：" + (error.message || "网络异常"));
           }
         }
       });

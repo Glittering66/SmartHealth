@@ -35,7 +35,7 @@ export function updateLogs(data) {
   })
 }
 
-// 删除运动记录
+// ✅ 删除运动记录（级联删除：主表 + 动作 + 组）
 export function delLogs(logId) {
   return request({
     url: '/workout/logs/' + logId,

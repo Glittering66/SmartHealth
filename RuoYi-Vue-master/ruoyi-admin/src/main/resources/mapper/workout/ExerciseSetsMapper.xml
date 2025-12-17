@@ -93,4 +93,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{setId}
         </foreach>
     </delete>
+
+    <delete id="deleteByLogId" parameterType="Long">
+    DELETE es
+        FROM exercise_sets es
+        JOIN workout_exercise_details wed
+          ON es.detail_id = wed.detail_id
+        WHERE wed.log_id = #{logId}
+</delete>
+
 </mapper>

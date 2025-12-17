@@ -1,7 +1,10 @@
 package com.ruoyi.workout.controller;
 
+import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.utils.SecurityUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +26,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 运动记录Controller
- * 
+ *
  * @author ruoyi
  * @date 2025-12-16
  */
@@ -77,8 +80,18 @@ public class WorkoutLogsController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody WorkoutLogs workoutLogs)
     {
+        // 1️⃣ 用户ID：从登录态取
+        workoutLogs.setUserId(SecurityUtils.getUserId());
+
+        // 2️⃣ 运动日期：兜底处理（关键）
+        if (workoutLogs.getWorkoutDate() == null) {
+            workoutLogs.setWorkoutDate(new Date());
+        }
+
         return toAjax(workoutLogsService.insertWorkoutLogs(workoutLogs));
     }
+
+
 
     /**
      * 修改运动记录
@@ -94,11 +107,10 @@ public class WorkoutLogsController extends BaseController
     /**
      * 删除运动记录
      */
-    @PreAuthorize("@ss.hasPermi('workout:logs:remove')")
-    @Log(title = "运动记录", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{logIds}")
-    public AjaxResult remove(@PathVariable Long[] logIds)
-    {
-        return toAjax(workoutLogsService.deleteWorkoutLogsByLogIds(logIds));
+
+    @DeleteMapping("/{logId}")
+    public AjaxResult deleteWorkoutWithAll(@PathVariable Long logId) {
+        return toAjax(workoutLogsService.deleteWorkoutWithAll(logId));
     }
+
 }

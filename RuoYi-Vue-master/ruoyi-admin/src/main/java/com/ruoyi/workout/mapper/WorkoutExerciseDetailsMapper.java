@@ -2,6 +2,7 @@ package com.ruoyi.workout.mapper;
 
 import java.util.List;
 import com.ruoyi.workout.domain.WorkoutExerciseDetails;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 训练项目Mapper接口
@@ -9,6 +10,7 @@ import com.ruoyi.workout.domain.WorkoutExerciseDetails;
  * @author ruoyi
  * @date 2025-12-16
  */
+@Mapper
 public interface WorkoutExerciseDetailsMapper 
 {
     /**
@@ -58,4 +60,6 @@ public interface WorkoutExerciseDetailsMapper
      * @return 结果
      */
     public int deleteWorkoutExerciseDetailsByDetailIds(Long[] detailIds);
+
+    public int deleteByLogId(Long logId);
 }
