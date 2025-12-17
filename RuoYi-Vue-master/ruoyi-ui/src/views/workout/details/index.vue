@@ -92,6 +92,12 @@
 <script>
 // 步骤1：引入reference页面的API方法（统一数据来源）
 import { getList } from "@/api/workout/reference";
+import {
+  listDetails,
+  addDetails,
+  updateDetails,
+  deleteDetailCascade
+} from '@/api/workout/details'
 // 移除原来的axios直接引入（如果不需要的话）
 // import axios from 'axios'
 
@@ -128,6 +134,11 @@ export default {
     this.loadExerciseMetReference(); // 加载reference的动作库数据
   },
   methods: {
+    async loadExercises() {
+      const res = await listDetails(this.logId)
+      this.exerciseList = res.rows || []
+    },
+
     // 步骤2：修改为调用reference的API方法（和reference页面用同一接口）
     async loadExerciseMetReference() {
       this.selectLoading = true;
@@ -155,22 +166,47 @@ export default {
     },
 
     // 加载当前运动记录的动作（原有逻辑不变）
-    loadExercises() {
-      const storedExercises = localStorage.getItem("workout_exercise_details");
-      const allExercises = storedExercises ? JSON.parse(storedExercises) : [];
-      this.exerciseList = allExercises.filter(item => item.logId === this.logId);
-    },
+    // loadExercises() {
+    //   const storedExercises = localStorage.getItem("workout_exercise_details");
+    //   const allExercises = storedExercises ? JSON.parse(storedExercises) : [];
+    //   this.exerciseList = allExercises.filter(item => item.logId === this.logId);
+    // },
 
     // 保存动作到本地（原有逻辑不变）
-    saveExercises(exercises) {
-      localStorage.setItem("workout_exercise_details", JSON.stringify(exercises));
+    async saveExercise() {
+      this.$refs.exerciseFormRef.validate(async valid => {
+        if (!valid) return
+
+        const data = {
+          detailId: this.exerciseForm.detailId,
+          logId: this.logId,
+          exerciseName: this.exerciseForm.exerciseName,
+          muscleGroup: this.exerciseForm.muscleGroup,
+          equipment: this.exerciseForm.equipment,
+          difficulty: this.exerciseForm.difficulty,
+          targetSets: this.exerciseForm.targetSets,
+          targetReps: this.exerciseForm.targetReps,
+          met: this.exerciseForm.met
+        }
+
+        if (data.detailId) {
+          await updateDetails(data)
+          this.$message.success('修改成功')
+        } else {
+          await addDetails(data)
+          this.$message.success('新增成功')
+        }
+
+        this.dialogVisible = false
+        this.loadExercises()
+      })
     },
 
     // 打开新增动作弹窗（原有逻辑不变）
     openAddExerciseDialog() {
       this.dialogTitle = "新增运动动作";
       this.exerciseForm = {
-        detailId: `ex_${Date.now()}`,
+        detailId: null,     // ⭐ 关键
         logId: this.logId,
         exerciseName: "",
         muscleGroup: "",
@@ -193,42 +229,18 @@ export default {
       this.dialogVisible = true;
     },
 
-    // 保存动作（原有逻辑不变）
-    saveExercise() {
-      this.$refs.exerciseFormRef.validate((valid) => {
-        if (valid) {
-          const storedExercises = localStorage.getItem("workout_exercise_details");
-          const allExercises = storedExercises ? JSON.parse(storedExercises) : [];
-
-          const index = allExercises.findIndex(item => item.detailId === this.exerciseForm.detailId);
-          if (index > -1) {
-            allExercises[index] = this.exerciseForm;
-          } else {
-            allExercises.push(this.exerciseForm);
-          }
-
-          this.saveExercises(allExercises);
-          this.loadExercises();
-          this.dialogVisible = false;
-          this.$message.success("保存成功");
-        }
-      });
-    },
-
     // 删除动作（原有逻辑不变）
-    deleteExercise(row) {
-      this.$confirm("确定删除该动作吗？", "提示", {type: "warning"})
-        .then(() => {
-          const storedExercises = localStorage.getItem("workout_exercise_details");
-          const allExercises = storedExercises ? JSON.parse(storedExercises) : [];
-          const newExercises = allExercises.filter(item => item.detailId !== row.detailId);
-          this.saveExercises(newExercises);
-          this.loadExercises();
-          this.$message.success("删除成功");
-        })
-        .catch(() => {
-          this.$message.info("已取消删除");
-        });
+    async deleteExercise(row) {
+      await this.$confirm(
+        '确认删除该动作及其所有组记录吗？',
+        '提示',
+        { type: 'warning' }
+      )
+
+      await deleteDetailCascade(row.detailId)
+
+      this.$message.success('删除成功')
+      this.loadExercises()
     },
 
     // 跳转到组记录页（原有逻辑不变）

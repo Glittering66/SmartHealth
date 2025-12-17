@@ -101,4 +101,14 @@ public class WorkoutExerciseDetailsController extends BaseController
     {
         return toAjax(workoutExerciseDetailsService.deleteWorkoutExerciseDetailsByDetailIds(detailIds));
     }
+
+    /**
+     * 级联删除训练项目（含 sets）
+     */
+    @PreAuthorize("@ss.hasPermi('workout:details:remove')")
+    @Log(title = "训练项目", businessType = BusinessType.DELETE)
+    @DeleteMapping("/cascade/{detailId}")
+    public AjaxResult deleteCascade(@PathVariable Long detailId) {
+        return toAjax(workoutExerciseDetailsService.deleteDetailWithSets(detailId));
+    }
 }

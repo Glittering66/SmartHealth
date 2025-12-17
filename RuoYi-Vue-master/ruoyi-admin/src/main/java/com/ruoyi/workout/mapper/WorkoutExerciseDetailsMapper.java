@@ -62,4 +62,8 @@ public interface WorkoutExerciseDetailsMapper
     public int deleteWorkoutExerciseDetailsByDetailIds(Long[] detailIds);
 
     public int deleteByLogId(Long logId);
+
+    List<WorkoutExerciseDetails> selectByLogId(Long logId);
+
+    int deleteByDetailId(Long detailId);
 }
