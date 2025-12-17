@@ -75,6 +75,11 @@ Vue.use(Element, {
 
 Vue.config.productionTip = false
 
+// ======================================
+// 新增：配置Vue2全局事件总线（关键代码）
+// ======================================
+Vue.prototype.$bus = new Vue()
+
 new Vue({
   el: '#app',
   router,
