@@ -42,3 +42,12 @@ export function delReference(exerciseId) {
     method: 'delete'
   })
 }
+
+// 查询运动类型（exercise_met_reference）列表
+export function getList(query) {
+  return request({
+    url: '/workout/reference/list', // 对应控制器的/list接口
+    method: 'get',
+    params: query // 可传递查询参数（如分页、筛选条件）
+  })
+}
