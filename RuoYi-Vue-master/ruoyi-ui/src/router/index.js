@@ -87,6 +87,50 @@ export const constantRoutes = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
+  },
+
+  // 训练记录核心路由（消除多余菜单的关键配置）
+  {
+    path: '/workout',
+    component: Layout,
+    redirect: '/workout/logs',
+    name: 'Workout',
+    meta: { title: '训练记录', icon: 'example' }, // 仅显示这一个父菜单
+    alwaysShow: true, // 强制父菜单单独显示，不展开子菜单（即使有子路由）
+    children: [
+      // 训练记录列表页（如果也不想显示，就添加hidden: true）
+      {
+        path: 'logs',
+        name: 'LogList',
+        component: () => import('@/views/workout/logs/index'),
+        meta: { title: '训练记录列表', icon: 'list' },
+        hidden: true // 【关键】添加hidden，子菜单不显示在侧边栏
+      },
+      // 训练动作详情页（侧边栏隐藏）
+      {
+        path: 'details',
+        name: 'DetailList',
+        component: () => import('@/views/workout/details/index'),
+        meta: { title: '训练动作详情', activeMenu: '/workout/logs' },
+        hidden: true // 侧边栏隐藏
+      },
+      // 训练组记录页（侧边栏隐藏）
+      {
+        path: 'sets',
+        name: 'SetsList',
+        component: () => import('@/views/workout/sets/index'),
+        meta: { title: '训练组记录', activeMenu: '/workout/logs' },
+        hidden: true // 侧边栏隐藏
+      },
+      // 动作库参考页（侧边栏隐藏，不再显示为菜单）
+      {
+        path: 'reference',
+        name: 'Reference',
+        component: () => import('@/views/workout/reference/index'),
+        meta: { title: '动作库参考', icon: 'guide' },
+        hidden: true // 【关键】添加hidden，彻底隐藏该子菜单
+      }
+    ]
   }
 ]
 

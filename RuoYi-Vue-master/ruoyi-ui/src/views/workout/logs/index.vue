@@ -1,368 +1,351 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="${comment}" prop="userId">
-        <el-input
-          v-model="queryParams.userId"
-          placeholder="请输入${comment}"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="${comment}" prop="workoutDate">
-        <el-date-picker clearable
-          v-model="queryParams.workoutDate"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="请选择${comment}">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="${comment}" prop="workoutName">
-        <el-input
-          v-model="queryParams.workoutName"
-          placeholder="请输入${comment}"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="总训练时长(分钟)" prop="totalDuration">
-        <el-input
-          v-model="queryParams.totalDuration"
-          placeholder="请输入总训练时长(分钟)"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="预估总消耗卡路里" prop="totalCalories">
-        <el-input
-          v-model="queryParams.totalCalories"
-          placeholder="请输入预估总消耗卡路里"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="${comment}" prop="createdAt">
-        <el-date-picker clearable
-          v-model="queryParams.createdAt"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="请选择${comment}">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="${comment}" prop="updatedAt">
-        <el-date-picker clearable
-          v-model="queryParams.updatedAt"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="请选择${comment}">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <!-- 顶部操作栏 -->
+    <div class="header-bar">
+      <h2>我的训练记录</h2>
+      <el-button type="primary" icon="el-icon-plus" @click="openAddDialog">
+        新增训练记录
+      </el-button>
+    </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['workout:logs:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['workout:logs:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['workout:logs:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['workout:logs:export']"
-        >导出</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="logsList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="${comment}" align="center" prop="logId" />
-      <el-table-column label="${comment}" align="center" prop="userId" />
-      <el-table-column label="${comment}" align="center" prop="workoutDate" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.workoutDate, '{y}-{m}-{d}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="${comment}" align="center" prop="workoutName" />
-      <el-table-column label="总训练时长(分钟)" align="center" prop="totalDuration" />
-      <el-table-column label="预估总消耗卡路里" align="center" prop="totalCalories" />
-      <el-table-column label="训练备注" align="center" prop="notes" />
-      <el-table-column label="${comment}" align="center" prop="createdAt" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createdAt, '{y}-{m}-{d}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="${comment}" align="center" prop="updatedAt" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.updatedAt, '{y}-{m}-{d}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['workout:logs:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['workout:logs:remove']"
-          >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
-
-    <!-- 添加或修改运动记录对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="${comment}" prop="userId">
-          <el-input v-model="form.userId" placeholder="请输入${comment}" />
+    <!-- 筛选区域 -->
+    <el-card class="filter-card">
+      <el-form inline :model="filterForm">
+        <el-form-item label="训练日期">
+          <el-date-picker
+            v-model="filterForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          />
         </el-form-item>
-        <el-form-item label="${comment}" prop="workoutDate">
-          <el-date-picker clearable
-            v-model="form.workoutDate"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="请选择${comment}">
-          </el-date-picker>
+        <el-form-item label="训练名称">
+          <el-input v-model="filterForm.logName" placeholder="请输入训练名称" />
         </el-form-item>
-        <el-form-item label="${comment}" prop="workoutName">
-          <el-input v-model="form.workoutName" placeholder="请输入${comment}" />
-        </el-form-item>
-        <el-form-item label="总训练时长(分钟)" prop="totalDuration">
-          <el-input v-model="form.totalDuration" placeholder="请输入总训练时长(分钟)" />
-        </el-form-item>
-        <el-form-item label="预估总消耗卡路里" prop="totalCalories">
-          <el-input v-model="form.totalCalories" placeholder="请输入预估总消耗卡路里" />
-        </el-form-item>
-        <el-form-item label="训练备注" prop="notes">
-          <el-input v-model="form.notes" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="${comment}" prop="createdAt">
-          <el-date-picker clearable
-            v-model="form.createdAt"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="请选择${comment}">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="${comment}" prop="updatedAt">
-          <el-date-picker clearable
-            v-model="form.updatedAt"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="请选择${comment}">
-          </el-date-picker>
+        <el-form-item>
+          <el-button type="primary" @click="filterLogs">查询</el-button>
+          <el-button @click="resetFilter">重置</el-button>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
+    </el-card>
+
+    <!-- 训练记录列表 -->
+    <el-card class="log-list-card">
+      <el-table :data="filteredLogs" border style="width: 100%">
+        <el-table-column prop="logDate" label="训练日期" width="120" />
+        <el-table-column prop="logName" label="训练名称" />
+        <el-table-column prop="totalDuration" label="总时长(分钟)" width="120" />
+        <el-table-column prop="totalCalories" label="消耗热量(kcal)" width="140" />
+        <el-table-column prop="notes" label="备注" min-width="180" />
+        <el-table-column label="操作" width="200">
+          <template slot-scope="scope">
+            <el-button size="mini" type="primary" @click="goToDetails(scope.row.logId)">
+              查看动作
+            </el-button>
+            <el-button size="mini" type="success" @click="openEditDialog(scope.row)">
+              编辑
+            </el-button>
+            <el-button size="mini" type="danger" @click="deleteLog(scope.row)">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+
+    <!-- 新增训练记录弹窗 -->
+    <el-dialog
+      title="新增训练记录"
+      :visible.sync="addDialogVisible"
+      width="600px"
+      @close="resetAddForm"
+    >
+      <el-form
+        :model="addForm"
+        :rules="addFormRules"
+        ref="addFormRef"
+        label-width="120px"
+      >
+        <el-form-item label="训练日期" prop="logDate">
+          <el-date-picker
+            v-model="addForm.logDate"
+            type="date"
+            placeholder="请选择训练日期"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="训练名称" prop="logName">
+          <el-input v-model="addForm.logName" placeholder="请输入训练名称" />
+        </el-form-item>
+        <el-form-item label="总时长(分钟)" prop="totalDuration">
+          <el-input-number v-model="addForm.totalDuration" :min="1" placeholder="请输入总时长" />
+        </el-form-item>
+        <el-form-item label="消耗热量(kcal)" prop="totalCalories">
+          <el-input-number v-model="addForm.totalCalories" :min="1" placeholder="请输入消耗热量" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="addForm.notes" type="textarea" placeholder="请输入备注（选填）" />
+        </el-form-item>
+      </el-form>
+      <template slot="footer">
+        <el-button @click="addDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitAddForm">提交</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑训练记录弹窗 -->
+    <el-dialog
+      title="编辑训练记录"
+      :visible.sync="editDialogVisible"
+      width="600px"
+      @close="resetEditForm"
+    >
+      <el-form
+        :model="editForm"
+        :rules="editFormRules"
+        ref="editFormRef"
+        label-width="120px"
+      >
+        <el-input v-model="editForm.logId" type="hidden" />
+        <el-form-item label="训练日期" prop="logDate">
+          <el-date-picker
+            v-model="editForm.logDate"
+            type="date"
+            placeholder="请选择训练日期"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="训练名称" prop="logName">
+          <el-input v-model="editForm.logName" placeholder="请输入训练名称" />
+        </el-form-item>
+        <el-form-item label="总时长(分钟)" prop="totalDuration">
+          <el-input-number v-model="editForm.totalDuration" :min="1" placeholder="请输入总时长" />
+        </el-form-item>
+        <el-form-item label="消耗热量(kcal)" prop="totalCalories">
+          <el-input-number v-model="editForm.totalCalories" :min="1" placeholder="请输入消耗热量" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="editForm.notes" type="textarea" placeholder="请输入备注（选填）" />
+        </el-form-item>
+      </el-form>
+      <template slot="footer">
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitEditForm">提交修改</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { listLogs, getLogs, delLogs, addLogs, updateLogs } from "@/api/workout/logs"
-
 export default {
-  name: "Logs",
   data() {
     return {
-      // 遮罩层
-      loading: true,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
-      // 显示搜索条件
-      showSearch: true,
-      // 总条数
-      total: 0,
-      // 运动记录表格数据
-      logsList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        userId: null,
-        workoutDate: null,
-        workoutName: null,
-        totalDuration: null,
-        totalCalories: null,
-        notes: null,
-        createdAt: null,
-        updatedAt: null
+      filterForm: {
+        dateRange: [],
+        logName: ""
       },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
-        userId: [
-          { required: true, message: "$comment不能为空", trigger: "blur" }
-        ],
-        workoutDate: [
-          { required: true, message: "$comment不能为空", trigger: "blur" }
-        ],
+      allLogs: [], // 所有训练记录（localStorage）
+      filteredLogs: [], // 筛选后的记录
+      addDialogVisible: false,
+      editDialogVisible: false,
+      addForm: {
+        logDate: '',
+        logName: '',
+        totalDuration: '',
+        totalCalories: '',
+        notes: ''
+      },
+      editForm: {
+        logId: '',
+        logDate: '',
+        logName: '',
+        totalDuration: '',
+        totalCalories: '',
+        notes: ''
+      },
+      addFormRules: {
+        logDate: [{ required: true, message: '请选择训练日期', trigger: 'blur' }],
+        logName: [{ required: true, message: '请输入训练名称', trigger: 'blur' }],
+        totalDuration: [{ required: true, message: '请输入总时长', trigger: 'blur' }],
+        totalCalories: [{ required: true, message: '请输入消耗热量', trigger: 'blur' }]
+      },
+      editFormRules: {
+        logDate: [{ required: true, message: '请选择训练日期', trigger: 'blur' }],
+        logName: [{ required: true, message: '请输入训练名称', trigger: 'blur' }],
+        totalDuration: [{ required: true, message: '请输入总时长', trigger: 'blur' }],
+        totalCalories: [{ required: true, message: '请输入消耗热量', trigger: 'blur' }]
       }
-    }
+    };
   },
   created() {
-    this.getList()
+    this.loadLogs();
   },
   methods: {
-    /** 查询运动记录列表 */
-    getList() {
-      this.loading = true
-      listLogs(this.queryParams).then(response => {
-        this.logsList = response.rows
-        this.total = response.total
-        this.loading = false
-      })
+    // 加载本地训练记录
+    loadLogs() {
+      const storedLogs = localStorage.getItem("workout_logs");
+      this.allLogs = storedLogs ? JSON.parse(storedLogs) : [];
+      this.filteredLogs = [...this.allLogs];
     },
-    // 取消按钮
-    cancel() {
-      this.open = false
-      this.reset()
+
+    // 保存训练记录到本地
+    saveLogs() {
+      localStorage.setItem("workout_logs", JSON.stringify(this.allLogs));
     },
-    // 表单重置
-    reset() {
-      this.form = {
-        logId: null,
-        userId: null,
-        workoutDate: null,
-        workoutName: null,
-        totalDuration: null,
-        totalCalories: null,
-        notes: null,
-        createdAt: null,
-        updatedAt: null
+
+    // 筛选训练记录
+    filterLogs() {
+      let result = [...this.allLogs];
+      if (this.filterForm.dateRange.length) {
+        const start = new Date(this.filterForm.dateRange[0]);
+        const end = new Date(this.filterForm.dateRange[1]);
+        result = result.filter(item => {
+          const logDate = new Date(item.logDate);
+          return logDate >= start && logDate <= end;
+        });
       }
-      this.resetForm("form")
+      if (this.filterForm.logName) {
+        result = result.filter(item =>
+          item.logName.includes(this.filterForm.logName)
+        );
+      }
+      this.filteredLogs = result;
     },
-    /** 搜索按钮操作 */
-    handleQuery() {
-      this.queryParams.pageNum = 1
-      this.getList()
+
+    // 重置筛选
+    resetFilter() {
+      this.filterForm = { dateRange: [], logName: "" };
+      this.filteredLogs = [...this.allLogs];
     },
-    /** 重置按钮操作 */
-    resetQuery() {
-      this.resetForm("queryForm")
-      this.handleQuery()
+
+    // 跳转到新增训练记录页（保留但未使用）
+    goToAddLog() {
+      this.$router.push("/workout/logs/add");
     },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.logId)
-      this.single = selection.length!==1
-      this.multiple = !selection.length
+
+    // 跳转到训练动作详情页
+    goToDetails(logId) {
+      this.$router.push({
+        path: "/workout/details",
+        query: { logId }
+      });
     },
-    /** 新增按钮操作 */
-    handleAdd() {
-      this.reset()
-      this.open = true
-      this.title = "添加运动记录"
+
+    // 编辑训练记录（保留但未使用）
+    editLog(row) {
+      this.$router.push({
+        path: "/workout/logs/edit",
+        query: { logId: row.logId }
+      });
     },
-    /** 修改按钮操作 */
-    handleUpdate(row) {
-      this.reset()
-      const logId = row.logId || this.ids
-      getLogs(logId).then(response => {
-        this.form = response.data
-        this.open = true
-        this.title = "修改运动记录"
-      })
+
+    // 删除训练记录+关联动作
+    deleteLog(row) {
+      this.$confirm("确定删除该记录及关联动作吗？", "提示", { type: "warning" })
+        .then(() => {
+          this.allLogs = this.allLogs.filter(item => item.logId !== row.logId);
+          this.saveLogs();
+          this.filteredLogs = [...this.allLogs];
+
+          const storedExercises = localStorage.getItem("workout_exercise_details");
+          const exercises = storedExercises ? JSON.parse(storedExercises) : [];
+          const newExercises = exercises.filter(item => item.logId !== row.logId);
+          localStorage.setItem("workout_exercise_details", JSON.stringify(newExercises));
+
+          this.$message.success("删除成功");
+        })
+        .catch(() => {
+          this.$message.info("已取消删除");
+        });
     },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
+
+    // 新增：获取当前最大ID（核心：自增逻辑）
+    getMaxLogId() {
+      if (this.allLogs.length === 0) return 0; // 无记录时，最大ID为0
+      // 从现有记录中提取logId，转换为数字后取最大值
+      const ids = this.allLogs.map(item => Number(item.logId));
+      return Math.max(...ids);
+    },
+
+    // 新增弹窗：打开弹窗
+    openAddDialog() {
+      this.addDialogVisible = true;
+      this.resetAddForm();
+    },
+
+    // 新增弹窗：重置表单
+    resetAddForm() {
+      this.$refs.addFormRef && this.$refs.addFormRef.resetFields();
+      this.addForm = { logDate: '', logName: '', totalDuration: '', totalCalories: '', notes: '' };
+    },
+
+    // 新增弹窗：提交表单（使用自增ID）
+    submitAddForm() {
+      this.$refs.addFormRef.validate((valid) => {
         if (valid) {
-          if (this.form.logId != null) {
-            updateLogs(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功")
-              this.open = false
-              this.getList()
-            })
-          } else {
-            addLogs(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功")
-              this.open = false
-              this.getList()
-            })
+          // 核心修改：自增ID = 最大ID + 1
+          const maxId = this.getMaxLogId();
+          const newLogId = maxId + 1; // 自增逻辑
+
+          // 组装新记录（logId为数字类型自增ID）
+          const newLog = {
+            logId: newLogId, // 自增ID（数字类型，如1、2、3...）
+            ...this.addForm
+          };
+
+          // 保存到本地并刷新列表
+          this.allLogs.unshift(newLog);
+          this.saveLogs();
+          this.filteredLogs = [...this.allLogs];
+          this.addDialogVisible = false;
+          this.$message.success('新增成功！');
+        }
+      });
+    },
+
+    // 编辑弹窗：打开弹窗
+    openEditDialog(row) {
+      this.editForm = { ...row };
+      this.editDialogVisible = true;
+    },
+
+    // 编辑弹窗：重置表单
+    resetEditForm() {
+      this.$refs.editFormRef && this.$refs.editFormRef.resetFields();
+      this.editForm = { logId: '', logDate: '', logName: '', totalDuration: '', totalCalories: '', notes: '' };
+    },
+
+    // 编辑弹窗：提交修改
+    submitEditForm() {
+      this.$refs.editFormRef.validate((valid) => {
+        if (valid) {
+          const index = this.allLogs.findIndex(item => item.logId === this.editForm.logId);
+          if (index !== -1) {
+            this.allLogs.splice(index, 1, { ...this.editForm });
+            this.saveLogs();
+            this.filteredLogs = [...this.allLogs];
+            this.editDialogVisible = false;
+            this.$message.success('修改成功！');
           }
         }
-      })
-    },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const logIds = row.logId || this.ids
-      this.$modal.confirm('是否确认删除运动记录编号为"' + logIds + '"的数据项？').then(function() {
-        return delLogs(logIds)
-      }).then(() => {
-        this.getList()
-        this.$modal.msgSuccess("删除成功")
-      }).catch(() => {})
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      this.download('workout/logs/export', {
-        ...this.queryParams
-      }, `logs_${new Date().getTime()}.xlsx`)
+      });
     }
   }
-}
+};
 </script>
+
+<style scoped>
+.app-container {
+  padding: 20px;
+}
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.filter-card {
+  margin-bottom: 20px;
+}
+</style>cd
