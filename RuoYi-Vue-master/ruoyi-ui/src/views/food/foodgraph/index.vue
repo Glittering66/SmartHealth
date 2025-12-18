@@ -7,13 +7,15 @@
 
 <script>
 import * as echarts from "echarts"
-import { listFood } from "@/api/food/food"
+import { getFoodGroupStats } from "@/api/food/food"
 
 export default {
   name: "FoodGraph",
   data() {
     return {
       chart: null,
+      // 后端返回的数据结构：
+      // [{ foodGroup: '谷物', count: 12 }, ...]
       foodList: []
     }
   },
@@ -28,32 +30,18 @@ export default {
     }
   },
   methods: {
-    /** ================== 加载食物数据 ================== */
+    /** ================== 加载食物分类统计数据（数据库聚合） ================== */
     loadFoodData() {
-      listFood({ pageNum: 1, pageSize: 9999 }).then(res => {
-        this.foodList = res.rows
+      getFoodGroupStats().then(res => {
+        this.foodList = res.data || []
         this.$nextTick(() => {
           this.initFoodGraph()
         })
       })
     },
 
-    /** ================== 统计食物分类 ================== */
-    buildFoodCategoryStats() {
-      const stats = {}
-
-      this.foodList.forEach(item => {
-        const group = item.foodGroup || "未分类"
-        stats[group] = (stats[group] || 0) + 1
-      })
-
-      return stats
-    },
-
     /** ================== 构建 Graph 数据 ================== */
     buildGraphData() {
-      const categoryStats = this.buildFoodCategoryStats()
-
       const nodes = [
         {
           name: "食物",
@@ -65,12 +53,13 @@ export default {
 
       const links = []
 
-      Object.keys(categoryStats).forEach(group => {
-        const count = categoryStats[group]
+      this.foodList.forEach(item => {
+        const group = item.foodGroup || "未分类"
+        const count = item.count || 0
 
         nodes.push({
           name: `${group}（${count}）`,
-          rawName: group,            // ⭐ 原始分类名（用于跳转）
+          rawName: group, // 原始分类名（用于跳转）
           value: count,
           category: 1,
           symbolSize: Math.min(65, 40 + Math.sqrt(count) * 6),
@@ -140,26 +129,21 @@ export default {
 
       this.chart.setOption(option)
 
-      // ⭐ 点击二级节点预留接口
+      // 分类节点点击跳转
       this.chart.off("click")
       this.chart.on("click", params => {
-        if (params.data.category === 1) {
+        if (params.data && params.data.category === 1) {
           this.handleCategoryClick(params.data.rawName)
         }
       })
     },
 
-    /** ================== 分类点击跳转接口 ================== */
+    /** ================== 分类点击跳转 ================== */
     handleCategoryClick(foodGroup) {
-      // 👉 你可以在这里自由扩展
-      // 1️⃣ 跳转分类详情页
       this.$router.push({
-        path: "/food/food",
+        path: "/food/macro",
         query: { foodGroup }
       })
-
-      // 2️⃣ 或跳转统计页面
-      // this.$router.push(`/food/stat/${foodGroup}`)
     },
 
     resizeChart() {

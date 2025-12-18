@@ -3,16 +3,96 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.food.mapper.FoodsMapper">
-    
+
     <resultMap type="Foods" id="FoodsResult">
         <result property="id"    column="id"    />
         <result property="name"    column="name"    />
         <result property="foodGroup"    column="food_group"    />
     </resultMap>
 
+    <resultMap id="FoodNutritionDetailMap"
+               type="com.ruoyi.food.domain.dto.FoodNutritionDetailDto">
+
+        <!-- 基础信息 -->
+        <id column="food_id" property="foodId"/>
+        <result column="food_name" property="foodName"/>
+        <result column="food_group" property="foodGroup"/>
+
+
+
+        <!-- 宏量营养素 -->
+        <association property="macro"
+                     javaType="com.ruoyi.food.domain.dto.MacroNutritionDto"
+                     notNullColumn="food_id">
+            <result column="calories" property="calories"/>
+            <result column="fat" property="fat"/>
+            <result column="saturated_fat" property="saturatedFat"/>
+            <result column="trans_fat" property="transFat"/>
+            <result column="protein" property="protein"/>
+            <result column="carbohydrate" property="carbohydrate"/>
+            <result column="net_carbs" property="netCarbs"/>
+            <result column="sugars" property="sugars"/>
+            <result column="fiber" property="fiber"/>
+            <result column="cholesterol" property="cholesterol"/>
+            <result column="water" property="water"/>
+        </association>
+
+        <!-- 脂肪酸（关键） -->
+        <association property="fattyAcids"
+                     javaType="com.ruoyi.food.domain.dto.FattyAcidDto"
+                     notNullColumn="food_id">
+            <result column="omega3" property="omega3"/>
+            <result column="omega6" property="omega6"/>
+            <result column="dha" property="dha"/>
+            <result column="epa" property="epa"/>
+            <result column="mono_fat" property="monoFat"/>
+            <result column="poly_fat" property="polyFat"/>
+        </association>
+
+        <!-- 矿物质 -->
+        <association property="minerals"
+                     javaType="com.ruoyi.food.domain.dto.MineralDto"
+                     notNullColumn="food_id">
+            <result column="calcium" property="calcium"/>
+            <result column="iron" property="iron"/>
+            <result column="potassium" property="potassium"/>
+            <result column="magnesium" property="magnesium"/>
+            <result column="phosphorus" property="phosphorus"/>
+            <result column="sodium" property="sodium"/>
+            <result column="zinc" property="zinc"/>
+            <result column="selenium" property="selenium"/>
+        </association>
+
+        <!-- 维生素（关键） -->
+        <association property="vitamins"
+                     javaType="com.ruoyi.food.domain.dto.VitaminDto"
+                     notNullColumn="food_id">
+            <result column="vitamin_a_rae" property="vitaminARae"/>
+            <result column="vitamin_c" property="vitaminC"/>
+            <result column="vitamin_d" property="vitaminD"/>
+            <result column="vitamin_e" property="vitaminE"/>
+            <result column="vitamin_k" property="vitaminK"/>
+            <result column="vitamin_b1" property="vitaminB1"/>
+            <result column="vitamin_b2" property="vitaminB2"/>
+            <result column="vitamin_b3" property="vitaminB3"/>
+            <result column="vitamin_b5" property="vitaminB5"/>
+            <result column="vitamin_b6" property="vitaminB6"/>
+            <result column="vitamin_b12" property="vitaminB12"/>
+            <result column="folate_b9" property="folateB9"/>
+        </association>
+
+        <!-- 份量（一对多） -->
+        <collection property="servings"
+                    ofType="com.ruoyi.food.domain.dto.FoodServingDto">
+            <result column="serving_weight" property="servingWeight"/>
+            <result column="serving_desc" property="servingDesc"/>
+        </collection>
+
+    </resultMap>
     <sql id="selectFoodsVo">
         select id, name, food_group from foods
     </sql>
+
 
     <select id="selectFoodsList" parameterType="Foods" resultMap="FoodsResult">
         <include refid="selectFoodsVo"/>
@@ -21,7 +101,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="foodGroup != null  and foodGroup != ''"> and food_group = #{foodGroup}</if>
         </where>
     </select>
-    
+
+    <select id="selectFoodGroupStats"
+            resultType="com.ruoyi.food.domain.vo.FoodGroupStatVO">
+        SELECT
+            IFNULL(food_group, '未分类') AS foodGroup,
+            COUNT(*) AS count
+        FROM foods
+        GROUP BY food_group
+    </select>
+
     <select id="selectFoodsById" parameterType="Long" resultMap="FoodsResult">
         <include refid="selectFoodsVo"/>
         where id = #{id}
@@ -60,4 +149,69 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{id}
         </foreach>
     </delete>
+
+    <select id="selectFoodNutritionDetail"
+            resultMap="FoodNutritionDetailMap">
+
+        SELECT
+            f.id               AS food_id,
+            f.name             AS food_name,
+            f.food_group       AS food_group,
+
+
+            nm.calories,
+            nm.fat,
+            nm.saturated_fat,
+            nm.trans_fat,
+            nm.protein,
+            nm.carbohydrate,
+            nm.net_carbs,
+            nm.sugars,
+            nm.fiber,
+            nm.cholesterol,
+            nm.water,
+
+            nfa.omega3,
+            nfa.omega6,
+            nfa.dha,
+            nfa.epa,
+            nfa.mono_fat,
+            nfa.poly_fat,
+
+            nmi.calcium,
+            nmi.iron,
+            nmi.potassium,
+            nmi.magnesium,
+            nmi.phosphorus,
+            nmi.sodium,
+            nmi.zinc,
+            nmi.selenium,
+
+            nv.vitamin_a_rae,
+            nv.vitamin_c,
+            nv.vitamin_d,
+            nv.vitamin_e,
+            nv.vitamin_k,
+            nv.vitamin_b1,
+            nv.vitamin_b2,
+            nv.vitamin_b3,
+            nv.vitamin_b5,
+            nv.vitamin_b6,
+            nv.vitamin_b12,
+            nv.folate_b9,
+
+            fs.serving_weight,
+                fs.serving_desc
+
+        FROM foods f
+                 LEFT JOIN food_servings fs ON f.id = fs.food_id
+                 LEFT JOIN nutrients_macro nm ON f.id = nm.food_id
+                 LEFT JOIN nutrients_fatty_acids nfa ON f.id = nfa.food_id
+                 LEFT JOIN nutrients_minerals nmi ON f.id = nmi.food_id
+                 LEFT JOIN nutrients_vitamins nv ON f.id = nv.food_id
+
+        WHERE f.id = #{foodId}
+
+    </select>
+
 </mapper>

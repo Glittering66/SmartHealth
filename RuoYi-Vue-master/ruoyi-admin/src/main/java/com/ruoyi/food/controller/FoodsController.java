@@ -101,4 +101,14 @@ public class FoodsController extends BaseController
     {
         return toAjax(foodsService.deleteFoodsByIds(ids));
     }
+
+    @GetMapping("/group/stats")
+    public AjaxResult foodGroupStats() {
+        return AjaxResult.success(foodsService.selectFoodGroupStats());
+    }
+
+    @GetMapping("/detail/{id}")
+    public AjaxResult getDetail(@PathVariable Long id) {
+        return AjaxResult.success(foodsService.getFoodDetail(id));
+    }
 }

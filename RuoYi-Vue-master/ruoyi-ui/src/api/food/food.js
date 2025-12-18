@@ -42,3 +42,17 @@ export function delFood(id) {
     method: 'delete'
   })
 }
+
+export function getFoodGroupStats() {
+  return request({
+    url: '/food/food/group/stats',
+    method: 'get'
+  })
+}
+
+export function getFoodDetail(id) {
+  return request({
+    url: `/food/food/detail/${id}`,
+    method: 'get'
+  })
+}

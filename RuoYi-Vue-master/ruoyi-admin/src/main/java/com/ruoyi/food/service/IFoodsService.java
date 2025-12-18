@@ -2,6 +2,8 @@ package com.ruoyi.food.service;
 
 import java.util.List;
 import com.ruoyi.food.domain.Foods;
+import com.ruoyi.food.domain.dto.FoodNutritionDetailDto;
+import com.ruoyi.food.domain.vo.FoodGroupStatVO;
 
 /**
  * 食物查询Service接口
@@ -58,4 +60,8 @@ public interface IFoodsService
      * @return 结果
      */
     public int deleteFoodsById(Long id);
+
+    List<FoodGroupStatVO> selectFoodGroupStats();
+
+    public FoodNutritionDetailDto getFoodDetail(Long foodId);
 }

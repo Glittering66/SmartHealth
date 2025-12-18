@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.food.mapper.NutrientsMacroMapper">
+    
+    <resultMap type="NutrientsMacro" id="NutrientsMacroResult">
+        <result property="foodId"    column="food_id"    />
+        <result property="calories"    column="calories"    />
+        <result property="fat"    column="fat"    />
+        <result property="saturatedFat"    column="saturated_fat"    />
+        <result property="transFat"    column="trans_fat"    />
+        <result property="protein"    column="protein"    />
+        <result property="carbohydrate"    column="carbohydrate"    />
+        <result property="netCarbs"    column="net_carbs"    />
+        <result property="sugars"    column="sugars"    />
+        <result property="fiber"    column="fiber"    />
+        <result property="cholesterol"    column="cholesterol"    />
+        <result property="water"    column="water"    />
+    </resultMap>
+
+    <sql id="selectNutrientsMacroVo">
+        select food_id, calories, fat, saturated_fat, trans_fat, protein, carbohydrate, net_carbs, sugars, fiber, cholesterol, water from nutrients_macro
+    </sql>
+
+    <select id="selectNutrientsMacroList" parameterType="NutrientsMacro" resultMap="NutrientsMacroResult">
+        <include refid="selectNutrientsMacroVo"/>
+        <where>  
+            <if test="calories != null "> and calories = #{calories}</if>
+            <if test="fat != null "> and fat = #{fat}</if>
+            <if test="saturatedFat != null "> and saturated_fat = #{saturatedFat}</if>
+            <if test="transFat != null "> and trans_fat = #{transFat}</if>
+            <if test="protein != null "> and protein = #{protein}</if>
+            <if test="carbohydrate != null "> and carbohydrate = #{carbohydrate}</if>
+            <if test="netCarbs != null "> and net_carbs = #{netCarbs}</if>
+            <if test="sugars != null "> and sugars = #{sugars}</if>
+            <if test="fiber != null "> and fiber = #{fiber}</if>
+            <if test="cholesterol != null "> and cholesterol = #{cholesterol}</if>
+            <if test="water != null "> and water = #{water}</if>
+        </where>
+    </select>
+    
+    <select id="selectNutrientsMacroByFoodId" parameterType="Long" resultMap="NutrientsMacroResult">
+        <include refid="selectNutrientsMacroVo"/>
+        where food_id = #{foodId}
+    </select>
+
+    <insert id="insertNutrientsMacro" parameterType="NutrientsMacro">
+        insert into nutrients_macro
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="foodId != null">food_id,</if>
+            <if test="calories != null">calories,</if>
+            <if test="fat != null">fat,</if>
+            <if test="saturatedFat != null">saturated_fat,</if>
+            <if test="transFat != null">trans_fat,</if>
+            <if test="protein != null">protein,</if>
+            <if test="carbohydrate != null">carbohydrate,</if>
+            <if test="netCarbs != null">net_carbs,</if>
+            <if test="sugars != null">sugars,</if>
+            <if test="fiber != null">fiber,</if>
+            <if test="cholesterol != null">cholesterol,</if>
+            <if test="water != null">water,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="foodId != null">#{foodId},</if>
+            <if test="calories != null">#{calories},</if>
+            <if test="fat != null">#{fat},</if>
+            <if test="saturatedFat != null">#{saturatedFat},</if>
+            <if test="transFat != null">#{transFat},</if>
+            <if test="protein != null">#{protein},</if>
+            <if test="carbohydrate != null">#{carbohydrate},</if>
+            <if test="netCarbs != null">#{netCarbs},</if>
+            <if test="sugars != null">#{sugars},</if>
+            <if test="fiber != null">#{fiber},</if>
+            <if test="cholesterol != null">#{cholesterol},</if>
+            <if test="water != null">#{water},</if>
+         </trim>
+    </insert>
+
+    <update id="updateNutrientsMacro" parameterType="NutrientsMacro">
+        update nutrients_macro
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="calories != null">calories = #{calories},</if>
+            <if test="fat != null">fat = #{fat},</if>
+            <if test="saturatedFat != null">saturated_fat = #{saturatedFat},</if>
+            <if test="transFat != null">trans_fat = #{transFat},</if>
+            <if test="protein != null">protein = #{protein},</if>
+            <if test="carbohydrate != null">carbohydrate = #{carbohydrate},</if>
+            <if test="netCarbs != null">net_carbs = #{netCarbs},</if>
+            <if test="sugars != null">sugars = #{sugars},</if>
+            <if test="fiber != null">fiber = #{fiber},</if>
+            <if test="cholesterol != null">cholesterol = #{cholesterol},</if>
+            <if test="water != null">water = #{water},</if>
+        </trim>
+        where food_id = #{foodId}
+    </update>
+
+    <delete id="deleteNutrientsMacroByFoodId" parameterType="Long">
+        delete from nutrients_macro where food_id = #{foodId}
+    </delete>
+
+    <delete id="deleteNutrientsMacroByFoodIds" parameterType="String">
+        delete from nutrients_macro where food_id in 
+        <foreach item="foodId" collection="array" open="(" separator="," close=")">
+            #{foodId}
+        </foreach>
+    </delete>
+</mapper>

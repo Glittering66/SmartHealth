@@ -2,6 +2,8 @@ package com.ruoyi.food.mapper;
 
 import java.util.List;
 import com.ruoyi.food.domain.Foods;
+import com.ruoyi.food.domain.vo.FoodGroupStatVO;
+import com.ruoyi.food.domain.dto.FoodNutritionDetailDto;
 
 /**
  * 食物查询Mapper接口
@@ -58,4 +60,10 @@ public interface FoodsMapper
      * @return 结果
      */
     public int deleteFoodsByIds(Long[] ids);
+
+
+    List<FoodGroupStatVO> selectFoodGroupStats();
+
+    FoodNutritionDetailDto selectFoodNutritionDetail(Long foodId);
+
 }

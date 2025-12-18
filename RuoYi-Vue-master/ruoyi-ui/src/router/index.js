@@ -132,6 +132,30 @@ export const constantRoutes = [
       }
     ]
   }
+  ,{
+    path: '/food',
+    component: Layout,
+    redirect: 'noRedirect',
+    children: [
+      {
+        path: 'food',
+        component: () => import('@/views/food/food/index'),
+        name: 'Food',
+        meta: { title: '食物管理', icon: 'table' }
+      },
+      {
+        path: 'fooddetail/:id',
+        component: () => import('@/views/food/fooddetail/index'),
+        name: 'FoodDetail',
+        meta: {
+          title: '食物营养详情',
+          activeMenu: '/food/food'
+        },
+        hidden: true
+      }
+    ]
+  }
+
 ]
 
 // 动态路由，基于用户权限动态去加载

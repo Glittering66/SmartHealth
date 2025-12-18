@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.food.mapper.FoodMacroMapper">
+
+
+    <select id="selectFoodMacroByGroup" resultType="com.ruoyi.food.domain.vo.FoodMacroVO">
+        SELECT
+            f.id            AS foodId,
+            f.name          AS foodName,
+            f.food_group    AS foodGroup,
+            m.calories,
+            m.protein,
+            m.fat,
+            m.carbohydrate
+        FROM foods f
+                 LEFT JOIN nutrients_macro m ON f.id = m.food_id
+        WHERE f.food_group = #{foodGroup}
+    </select>
+
+    <select id="selectStatsByGroup" resultType="com.ruoyi.food.domain.vo.FoodMacroStatsVO">
+        SELECT
+            COUNT(*) AS total,
+            AVG(m.calories) AS avgCalories,
+            SUM(CASE WHEN m.protein >= 20 THEN 1 ELSE 0 END) AS highProteinCount
+        FROM foods f
+                 LEFT JOIN nutrients_macro m ON f.id = m.food_id
+        WHERE f.food_group = #{foodGroup}
+    </select>
+
+</mapper>

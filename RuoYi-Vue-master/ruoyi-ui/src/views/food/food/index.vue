@@ -44,63 +44,6 @@
       </el-form-item>
     </el-form>
 
-    <!-- 操作按钮 -->
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['food:food:add']"
-        >
-          新增
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['food:food:edit']"
-        >
-          修改
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['food:food:remove']"
-        >
-          删除
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['food:food:export']"
-        >
-          导出
-        </el-button>
-      </el-col>
-      <right-toolbar
-        :showSearch.sync="showSearch"
-        @queryTable="getList"
-      />
-    </el-row>
 
     <!-- 数据表格 -->
     <el-table
@@ -108,7 +51,7 @@
       :data="foodList"
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" width="55" align="center" />
+<!--      <el-table-column type="selection" width="55" align="center" />-->
       <el-table-column label="编号" prop="id" align="center" />
       <el-table-column label="食物名称" prop="name" align="center" />
       <el-table-column label="食物分类" prop="foodGroup" align="center" />
@@ -117,24 +60,22 @@
         align="center"
         class-name="small-padding fixed-width"
       >
+<!--        <el-button-->
+<!--          size="mini"-->
+<!--          type="text"-->
+<!--          icon="el-icon-view"-->
+<!--          @click="handleDetail(scope.row)"-->
+<!--        >-->
+<!--          查看详情-->
+<!--        </el-button>-->
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['food:food:edit']"
+            icon="el-icon-view"
+            @click="handleDetail(scope.row)"
           >
-            修改
-          </el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['food:food:remove']"
-          >
-            删除
+            详情
           </el-button>
         </template>
       </el-table-column>
@@ -219,6 +160,14 @@ export default {
     this.getList()
   },
   methods: {
+    handleDetail(row) {
+      this.$router.push({
+        path: "/food/fooddetail/index",
+        query: {
+          id: row.id
+        }
+      })
+    },
     getList() {
       this.loading = true
       listFood(this.queryParams).then(response => {

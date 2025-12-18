@@ -1,6 +1,9 @@
 package com.ruoyi.food.service.impl;
 
 import java.util.List;
+
+import com.ruoyi.food.domain.dto.FoodNutritionDetailDto;
+import com.ruoyi.food.domain.vo.FoodGroupStatVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.food.mapper.FoodsMapper;
@@ -89,5 +92,15 @@ public class FoodsServiceImpl implements IFoodsService
     public int deleteFoodsById(Long id)
     {
         return foodsMapper.deleteFoodsById(id);
+    }
+
+    @Override
+    public List<FoodGroupStatVO> selectFoodGroupStats() {
+        return foodsMapper.selectFoodGroupStats();
+    }
+
+    @Override
+    public FoodNutritionDetailDto getFoodDetail(Long foodId) {
+        return foodsMapper.selectFoodNutritionDetail(foodId);
     }
 }
