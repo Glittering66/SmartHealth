@@ -61,22 +61,22 @@
           <template v-if="hasData(detail.fattyAcids)">
             <el-descriptions :column="3" border>
               <el-descriptions-item label="Omega-3">
-                {{ showValue(detail.fattyAcids.omega3, "g") }}
+                {{ showValue(detail.fattyAcids.omega3, "mg") }}
               </el-descriptions-item>
-              <el-descriptions-item label="Omega-6">
-                {{ showValue(detail.fattyAcids.omega6, "g") }}
+              <el-descriptions-item label="Omega-6">M
+                {{ showValue(detail.fattyAcids.omega6, "mg") }}
               </el-descriptions-item>
               <el-descriptions-item label="DHA">
-                {{ showValue(detail.fattyAcids.dha, "g") }}
+                {{ showValue(detail.fattyAcids.dha, "mg") }}
               </el-descriptions-item>
               <el-descriptions-item label="EPA">
-                {{ showValue(detail.fattyAcids.epa, "g") }}
+                {{ showValue(detail.fattyAcids.epa, "mg") }}
               </el-descriptions-item>
               <el-descriptions-item label="单不饱和脂肪">
-                {{ showValue(detail.fattyAcids.monoFat, "g") }}
+                {{ showValue(detail.fattyAcids.monoFat, "mg") }}
               </el-descriptions-item>
               <el-descriptions-item label="多不饱和脂肪">
-                {{ showValue(detail.fattyAcids.polyFat, "g") }}
+                {{ showValue(detail.fattyAcids.polyFat, "mg") }}
               </el-descriptions-item>
             </el-descriptions>
           </template>

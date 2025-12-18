@@ -19,13 +19,13 @@
       </el-col>
       <el-col :span="8">
         <el-card>
-          <div class="stat-title">平均热量 (kcal)</div>
+          <div class="stat-title">平均热量 (kcal每100g)</div>
           <div class="stat-value">{{ stats.avgCalories }}</div>
         </el-card>
       </el-col>
       <el-col :span="8">
         <el-card>
-          <div class="stat-title">高蛋白食物数量</div>
+          <div class="stat-title">高蛋白食物数量（>=20g）</div>
           <div class="stat-value">{{ stats.highProteinCount }}</div>
         </el-card>
       </el-col>
@@ -74,6 +74,23 @@
       <el-table-column label="蛋白质(g)" prop="protein" align="center" />
       <el-table-column label="脂肪(g)" prop="fat" align="center" />
       <el-table-column label="碳水化合物(g)" prop="carbohydrate" align="center" />
+      <el-table-column
+        label="操作"
+        align="center"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="scope">
+        <el-button
+          size="mini"
+          type="text"
+          icon="el-icon-view"
+          @click="handleDetail(scope.row)"
+        >
+          详情
+        </el-button>
+      </template>
+      </el-table-column>
+
     </el-table>
 
     <!-- ================= 分页 ================= -->
@@ -117,6 +134,15 @@ export default {
     this.getList()
   },
   methods: {
+    /** ================= 详情 ================= */
+    handleDetail(row) {
+      this.$router.push({
+        path: "/food/fooddetail/index",
+        query: {
+          id: row.foodId
+        }
+      })
+    },
     /** ================= 查询（联表 + 统计） ================= */
     getList() {
       this.loading = true
