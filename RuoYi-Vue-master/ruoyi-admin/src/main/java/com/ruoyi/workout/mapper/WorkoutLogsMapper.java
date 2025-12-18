@@ -1,7 +1,11 @@
 package com.ruoyi.workout.mapper;
 
 import java.util.List;
+import java.util.Map;
+
 import com.ruoyi.workout.domain.WorkoutLogs;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 运动记录Mapper接口
@@ -9,6 +13,7 @@ import com.ruoyi.workout.domain.WorkoutLogs;
  * @author ruoyi
  * @date 2025-12-16
  */
+@Mapper
 public interface WorkoutLogsMapper 
 {
     /**
@@ -58,4 +63,14 @@ public interface WorkoutLogsMapper
      * @return 结果
      */
     public int deleteWorkoutLogsByLogIds(Long[] logIds);
+
+    /**
+     * 按日期统计每日总热量、总时长
+     */
+    List<Map<String, Object>> statisticCalorieAndDuration(
+            @Param("userId") Long userId,
+            @Param("startTime") String startTime,
+            @Param("endTime") String endTime
+    );
+
 }

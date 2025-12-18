@@ -58,4 +58,11 @@ public interface IWorkoutExerciseDetailsService
      * @return 结果
      */
     public int deleteWorkoutExerciseDetailsByDetailId(Long detailId);
+
+    List<WorkoutExerciseDetails> selectByLogId(Long logId);
+
+    /**
+     * 级联删除训练项目（含 sets）
+     */
+    int deleteDetailWithSets(Long detailId);
 }

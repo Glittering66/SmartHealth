@@ -1,18 +1,18 @@
 import request from '@/utils/request'
 
-// 查询训练项目列表
-export function listDetails(query) {
+// 根据 logId 查询训练项目列表
+export function listDetails(logId) {
   return request({
     url: '/workout/details/list',
     method: 'get',
-    params: query
+    params: { logId }
   })
 }
 
 // 查询训练项目详细
 export function getDetails(detailId) {
   return request({
-    url: '/workout/details/' + detailId,
+    url: `/workout/details/${detailId}`,
     method: 'get'
   })
 }
@@ -22,7 +22,7 @@ export function addDetails(data) {
   return request({
     url: '/workout/details',
     method: 'post',
-    data: data
+    data
   })
 }
 
@@ -31,14 +31,14 @@ export function updateDetails(data) {
   return request({
     url: '/workout/details',
     method: 'put',
-    data: data
+    data
   })
 }
 
-// 删除训练项目
-export function delDetails(detailId) {
+// ⭐ 级联删除（正确用这个）
+export function deleteDetailCascade(detailId) {
   return request({
-    url: '/workout/details/' + detailId,
+    url: `/workout/details/cascade/${detailId}`,
     method: 'delete'
   })
 }

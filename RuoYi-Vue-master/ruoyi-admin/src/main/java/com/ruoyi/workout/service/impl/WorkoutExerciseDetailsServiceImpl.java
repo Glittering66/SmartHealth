@@ -1,11 +1,14 @@
 package com.ruoyi.workout.service.impl;
 
 import java.util.List;
+
+import com.ruoyi.workout.mapper.ExerciseSetsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.workout.mapper.WorkoutExerciseDetailsMapper;
 import com.ruoyi.workout.domain.WorkoutExerciseDetails;
 import com.ruoyi.workout.service.IWorkoutExerciseDetailsService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 训练项目Service业务层处理
@@ -14,8 +17,14 @@ import com.ruoyi.workout.service.IWorkoutExerciseDetailsService;
  * @date 2025-12-16
  */
 @Service
-public class WorkoutExerciseDetailsServiceImpl implements IWorkoutExerciseDetailsService 
+public class WorkoutExerciseDetailsServiceImpl implements IWorkoutExerciseDetailsService
 {
+    @Autowired
+    private WorkoutExerciseDetailsMapper detailsMapper;
+
+    @Autowired
+    private ExerciseSetsMapper workoutSetsMapper;
+
     @Autowired
     private WorkoutExerciseDetailsMapper workoutExerciseDetailsMapper;
 
@@ -90,4 +99,25 @@ public class WorkoutExerciseDetailsServiceImpl implements IWorkoutExerciseDetail
     {
         return workoutExerciseDetailsMapper.deleteWorkoutExerciseDetailsByDetailId(detailId);
     }
+
+    @Override
+    public List<WorkoutExerciseDetails> selectByLogId(Long logId)
+    {
+        return workoutExerciseDetailsMapper.selectByLogId(logId);
+    }
+
+    /**
+     * 级联删除 detail + sets
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteDetailWithSets(Long detailId) {
+
+        // 1️⃣ 先删 sets
+        workoutSetsMapper.deleteByLogId(detailId);
+
+        // 2️⃣ 再删 detail
+        return detailsMapper.deleteWorkoutExerciseDetailsByDetailId(detailId);
+    }
+
 }

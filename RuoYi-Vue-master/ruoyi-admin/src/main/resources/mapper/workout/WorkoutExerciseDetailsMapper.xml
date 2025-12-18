@@ -41,6 +41,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where detail_id = #{detailId}
     </select>
 
+    <select id="selectByLogId" resultType="WorkoutExerciseDetails">
+        select * from workout_exercise_details
+        where log_id = #{logId}
+    </select>
+
     <insert id="insertWorkoutExerciseDetails" parameterType="WorkoutExerciseDetails" useGeneratedKeys="true" keyProperty="detailId">
         insert into workout_exercise_details
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -93,4 +98,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{detailId}
         </foreach>
     </delete>
+
+    <delete id="deleteByLogId" parameterType="Long">
+        delete from workout_exercise_details where log_id = #{logId}
+    </delete>
+
+    <delete id="deleteByDetailId">
+        delete from workout_exercise_details where detail_id = #{detailId}
+    </delete>
+
 </mapper>
