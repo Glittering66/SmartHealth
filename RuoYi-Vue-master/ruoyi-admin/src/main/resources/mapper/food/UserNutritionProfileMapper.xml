@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.food.mapper.UserNutritionProfileMapper">
+    
+    <resultMap type="UserNutritionProfile" id="UserNutritionProfileResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="gender"    column="gender"    />
+        <result property="age"    column="age"    />
+        <result property="height"    column="height"    />
+        <result property="weight"    column="weight"    />
+        <result property="activityLevel"    column="activity_level"    />
+        <result property="sunLevel"    column="sun_level"    />
+        <result property="smoke"    column="smoke"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectUserNutritionProfileVo">
+        select id, user_id, gender, age, height, weight, activity_level, sun_level, smoke, create_time, update_time from user_nutrition_profile
+    </sql>
+
+    <select id="selectUserNutritionProfileList" parameterType="UserNutritionProfile" resultMap="UserNutritionProfileResult">
+        <include refid="selectUserNutritionProfileVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="gender != null  and gender != ''"> and gender = #{gender}</if>
+            <if test="age != null "> and age = #{age}</if>
+            <if test="height != null "> and height = #{height}</if>
+            <if test="weight != null "> and weight = #{weight}</if>
+            <if test="activityLevel != null "> and activity_level = #{activityLevel}</if>
+            <if test="sunLevel != null  and sunLevel != ''"> and sun_level = #{sunLevel}</if>
+            <if test="smoke != null "> and smoke = #{smoke}</if>
+        </where>
+    </select>
+    
+    <select id="selectUserNutritionProfileById" parameterType="Long" resultMap="UserNutritionProfileResult">
+        <include refid="selectUserNutritionProfileVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertUserNutritionProfile" parameterType="UserNutritionProfile" useGeneratedKeys="true" keyProperty="id">
+        insert into user_nutrition_profile
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="gender != null and gender != ''">gender,</if>
+            <if test="age != null">age,</if>
+            <if test="height != null">height,</if>
+            <if test="weight != null">weight,</if>
+            <if test="activityLevel != null">activity_level,</if>
+            <if test="sunLevel != null and sunLevel != ''">sun_level,</if>
+            <if test="smoke != null">smoke,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="gender != null and gender != ''">#{gender},</if>
+            <if test="age != null">#{age},</if>
+            <if test="height != null">#{height},</if>
+            <if test="weight != null">#{weight},</if>
+            <if test="activityLevel != null">#{activityLevel},</if>
+            <if test="sunLevel != null and sunLevel != ''">#{sunLevel},</if>
+            <if test="smoke != null">#{smoke},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateUserNutritionProfile" parameterType="UserNutritionProfile">
+        update user_nutrition_profile
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="gender != null and gender != ''">gender = #{gender},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="height != null">height = #{height},</if>
+            <if test="weight != null">weight = #{weight},</if>
+            <if test="activityLevel != null">activity_level = #{activityLevel},</if>
+            <if test="sunLevel != null and sunLevel != ''">sun_level = #{sunLevel},</if>
+            <if test="smoke != null">smoke = #{smoke},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteUserNutritionProfileById" parameterType="Long">
+        delete from user_nutrition_profile where id = #{id}
+    </delete>
+
+    <delete id="deleteUserNutritionProfileByIds" parameterType="String">
+        delete from user_nutrition_profile where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

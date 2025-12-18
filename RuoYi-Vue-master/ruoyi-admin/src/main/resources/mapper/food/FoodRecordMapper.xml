@@ -1,45 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.food.mapper.FoodRecordMapper">
-    
+
     <resultMap type="FoodRecord" id="FoodRecordResult">
-        <result property="id"    column="id"    />
-        <result property="userId"    column="user_id"    />
-        <result property="foodId"    column="food_id"    />
-        <result property="foodName"    column="food_name"    />
-        <result property="foodGroup"    column="food_group"    />
-        <result property="mealType"    column="meal_type"    />
-        <result property="amount"    column="amount"    />
-        <result property="unit"    column="unit"    />
-        <result property="eatenAt"    column="eaten_at"    />
-        <result property="calories"    column="calories"    />
-        <result property="note"    column="note"    />
-        <result property="createTime"    column="create_time"    />
-        <result property="updateTime"    column="update_time"    />
+        <result property="id"            column="id"/>
+        <result property="userId"        column="user_id"/>
+        <result property="foodId"        column="food_id"/>
+        <result property="foodName"      column="food_name"/>
+        <result property="foodGroup"     column="food_group"/>
+        <result property="mealType"      column="meal_type"/>
+        <result property="amount"        column="amount"/>
+        <result property="unit"          column="unit"/>
+        <result property="totalWeightG"  column="total_weight_g"/>
+        <result property="eatenAt"       column="eaten_at"/>
+        <result property="calories"      column="calories"/>
+        <result property="note"          column="note"/>
+        <result property="createTime"    column="create_time"/>
+        <result property="updateTime"    column="update_time"/>
     </resultMap>
 
     <sql id="selectFoodRecordVo">
-        select id, user_id, food_id, food_name, food_group, meal_type, amount, unit, eaten_at, calories, note, create_time, update_time from food_record
+        select
+            id,
+            user_id,
+            food_id,
+            food_name,
+            food_group,
+            meal_type,
+            amount,
+            unit,
+            total_weight_g,
+            eaten_at,
+            calories,
+            note,
+            create_time,
+            update_time
+        from food_record
     </sql>
 
     <select id="selectFoodRecordList" parameterType="FoodRecord" resultMap="FoodRecordResult">
         <include refid="selectFoodRecordVo"/>
-        <where>  
-            <if test="userId != null "> and user_id = #{userId}</if>
-            <if test="foodId != null "> and food_id = #{foodId}</if>
-            <if test="foodName != null  and foodName != ''"> and food_name like concat('%', #{foodName}, '%')</if>
-            <if test="foodGroup != null  and foodGroup != ''"> and food_group = #{foodGroup}</if>
-            <if test="mealType != null  and mealType != ''"> and meal_type = #{mealType}</if>
-            <if test="amount != null "> and amount = #{amount}</if>
-            <if test="unit != null  and unit != ''"> and unit = #{unit}</if>
-            <if test="eatenAt != null "> and eaten_at = #{eatenAt}</if>
-            <if test="calories != null "> and calories = #{calories}</if>
-            <if test="note != null  and note != ''"> and note = #{note}</if>
+        <where>
+            <if test="userId != null"> and user_id = #{userId}</if>
+            <if test="foodId != null"> and food_id = #{foodId}</if>
+            <if test="foodName != null and foodName != ''">
+                and food_name like concat('%', #{foodName}, '%')
+            </if>
+            <if test="foodGroup != null and foodGroup != ''"> and food_group = #{foodGroup}</if>
+            <if test="mealType != null and mealType != ''"> and meal_type = #{mealType}</if>
+            <if test="amount != null"> and amount = #{amount}</if>
+            <if test="unit != null and unit != ''"> and unit = #{unit}</if>
+            <if test="totalWeightG != null"> and total_weight_g = #{totalWeightG}</if>
+            <if test="eatenAt != null"> and eaten_at = #{eatenAt}</if>
+            <if test="calories != null"> and calories = #{calories}</if>
+            <if test="note != null and note != ''"> and note = #{note}</if>
         </where>
     </select>
-    
+
     <select id="selectFoodRecordById" parameterType="Long" resultMap="FoodRecordResult">
         <include refid="selectFoodRecordVo"/>
         where id = #{id}
@@ -55,12 +74,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="mealType != null and mealType != ''">meal_type,</if>
             <if test="amount != null">amount,</if>
             <if test="unit != null and unit != ''">unit,</if>
+            <if test="totalWeightG != null">total_weight_g,</if>
             <if test="eatenAt != null">eaten_at,</if>
             <if test="calories != null">calories,</if>
             <if test="note != null">note,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateTime != null">update_time,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="userId != null">#{userId},</if>
             <if test="foodId != null">#{foodId},</if>
@@ -69,12 +89,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="mealType != null and mealType != ''">#{mealType},</if>
             <if test="amount != null">#{amount},</if>
             <if test="unit != null and unit != ''">#{unit},</if>
+            <if test="totalWeightG != null">#{totalWeightG},</if>
             <if test="eatenAt != null">#{eatenAt},</if>
             <if test="calories != null">#{calories},</if>
             <if test="note != null">#{note},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateTime != null">#{updateTime},</if>
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateFoodRecord" parameterType="FoodRecord">
@@ -87,10 +108,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="mealType != null and mealType != ''">meal_type = #{mealType},</if>
             <if test="amount != null">amount = #{amount},</if>
             <if test="unit != null and unit != ''">unit = #{unit},</if>
+            <if test="totalWeightG != null">total_weight_g = #{totalWeightG},</if>
             <if test="eatenAt != null">eaten_at = #{eatenAt},</if>
             <if test="calories != null">calories = #{calories},</if>
             <if test="note != null">note = #{note},</if>
-            <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
         </trim>
         where id = #{id}
@@ -101,9 +122,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteFoodRecordByIds" parameterType="String">
-        delete from food_record where id in 
+        delete from food_record where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>
     </delete>
+
 </mapper>

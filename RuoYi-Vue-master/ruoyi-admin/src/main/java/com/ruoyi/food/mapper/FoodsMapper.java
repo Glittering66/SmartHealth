@@ -2,8 +2,10 @@ package com.ruoyi.food.mapper;
 
 import java.util.List;
 import com.ruoyi.food.domain.Foods;
+import com.ruoyi.food.domain.dto.FoodBaseDetailDto;
 import com.ruoyi.food.domain.vo.FoodGroupStatVO;
 import com.ruoyi.food.domain.dto.FoodNutritionDetailDto;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 食物查询Mapper接口
@@ -66,4 +68,12 @@ public interface FoodsMapper
 
     FoodNutritionDetailDto selectFoodNutritionDetail(Long foodId);
 
+    FoodBaseDetailDto selectFoodBaseDetail(
+            @Param("foodId") Long foodId,
+            @Param("foodName") String foodName
+    );
+    List<FoodNutritionDetailDto> selectFoodNutritionDetailByDate(
+            @Param("userId") Long userId,
+            @Param("date") String date
+    );
 }

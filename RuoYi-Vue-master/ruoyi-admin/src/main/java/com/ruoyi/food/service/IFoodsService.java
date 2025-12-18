@@ -1,7 +1,11 @@
 package com.ruoyi.food.service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+
 import com.ruoyi.food.domain.Foods;
+import com.ruoyi.food.domain.dto.FoodBaseDetailDto;
 import com.ruoyi.food.domain.dto.FoodNutritionDetailDto;
 import com.ruoyi.food.domain.vo.FoodGroupStatVO;
 
@@ -64,4 +68,7 @@ public interface IFoodsService
     List<FoodGroupStatVO> selectFoodGroupStats();
 
     public FoodNutritionDetailDto getFoodDetail(Long foodId);
+    public FoodBaseDetailDto getFoodBaseDetail(Long foodId, String foodName);
+    public Map<String, BigDecimal> calcDailyActualNutrition(
+            Long userId, String date);
 }

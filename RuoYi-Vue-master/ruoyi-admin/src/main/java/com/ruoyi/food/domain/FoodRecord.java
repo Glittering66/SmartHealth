@@ -59,6 +59,16 @@ public class FoodRecord extends BaseEntity
     @Excel(name = "热量(可选，kcal)")
     private BigDecimal calories;
 
+    public BigDecimal getTotalWeightG() {
+        return totalWeightG;
+    }
+
+    public void setTotalWeightG(BigDecimal totalWeightG) {
+        this.totalWeightG = totalWeightG;
+    }
+
+    @Excel(name = "总质量(g)")
+    private BigDecimal totalWeightG;
     /** 备注 */
     @Excel(name = "备注")
     private String note;

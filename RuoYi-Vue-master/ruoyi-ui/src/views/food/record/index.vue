@@ -74,9 +74,6 @@
       <el-table-column label="食物名称" align="center" prop="foodName" min-width="160" show-overflow-tooltip />
       <el-table-column label="食物类别" align="center" prop="foodGroup" width="120" show-overflow-tooltip />
 
-      <!-- 新增：food-serving -> 份量 -->
-      <el-table-column label="份量" align="center" prop="foodServing" width="120" show-overflow-tooltip />
-
       <el-table-column label="餐次" align="center" prop="mealType" width="120">
         <template slot-scope="scope">
           <el-tag size="mini">{{ scope.row.mealType || '-' }}</el-tag>
@@ -92,6 +89,8 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="总量(g)" align="center" prop="totalWeightG" width="130" show-overflow-tooltip />
+
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="140">
         <template slot-scope="scope">
           <el-button size="mini" type="text" icon="el-icon-edit" @click="handleUpdate(scope.row)" v-hasPermi="['food:record:edit']">修改</el-button>
@@ -105,22 +104,22 @@
     <!-- 新增/修改弹窗：增加 份量（food-serving） + 单位下拉 -->
     <el-dialog :title="title" :visible.sync="open" width="560px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="110px">
-        <el-form-item label="食物ID" prop="foodId">
-          <el-input v-model="form.foodId" placeholder="可选：输入食物ID" clearable />
-        </el-form-item>
 
         <el-form-item label="食物名称" prop="foodName">
-          <el-input v-model="form.foodName" placeholder="可选：输入食物名称" clearable />
+          <el-autocomplete
+            v-model="form.foodName"
+            placeholder="请输入食物名称"
+            :fetch-suggestions="querySearchFood"
+            value-key="name"
+            clearable
+            @select="handleFoodSelect"
+          />
         </el-form-item>
 
         <el-form-item label="食物类别" prop="foodGroup">
           <el-input v-model="form.foodGroup" placeholder="如：水果/主食/零食" clearable />
         </el-form-item>
 
-        <!-- 新增：food-serving -->
-        <el-form-item label="份量（food-serving）" prop="foodServing">
-          <el-input v-model="form.foodServing" placeholder="例如：1 serving / 2 slices / 1 waffle square" clearable />
-        </el-form-item>
 
         <el-form-item label="餐次" prop="mealType">
           <el-select v-model="form.mealType" placeholder="请选择餐次" style="width: 100%">
@@ -128,13 +127,24 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="数量" prop="amount">
-          <el-input-number v-model="form.amount" :min="0.01" :precision="2" :step="1" controls-position="right" style="width: 100%" />
-        </el-form-item>
+        <el-form-item label="摄入量">
+          <el-input-number
+            v-model="form.amount"
+            :min="0"
+            style="width: 120px"
+          />
 
-        <el-form-item label="单位" prop="unit">
-          <el-select v-model="form.unit" placeholder="请选择单位" filterable clearable style="width: 100%">
-            <el-option v-for="u in unitOptions" :key="u.value" :label="u.label" :value="u.value" />
+          <el-select
+            v-model="form.servingId"
+            placeholder="单位"
+            style="width: 160px; margin-left: 10px"
+          >
+            <el-option
+              v-for="item in foodServings"
+              :key="item.servingWeight"
+              :label=" item.servingDesc+'('+item.servingWeight+'g)'"
+              :value="item.servingWeight"
+            />
           </el-select>
         </el-form-item>
       </el-form>
@@ -149,6 +159,7 @@
 
 <script>
 import { listRecord, getRecord, delRecord, addRecord, updateRecord } from "@/api/food/record"
+import {listFood,getFoodBaseDetail} from "@/api/food/food";
 
 export default {
   name: "Record",
@@ -167,10 +178,12 @@ export default {
       single: true,
       multiple: true,
       showSearch: true,
+      foodList: [],
       total: 0,
       recordList: [],
       title: "",
       open: false,
+      selectedServing: null,
 
       mealTypeOptions: [
         { label: "早餐", value: "早餐" },
@@ -179,21 +192,6 @@ export default {
         { label: "加餐", value: "加餐" },
       ],
 
-      // 单位选项：包含你要求的
-      unitOptions: [
-        { label: "serving", value: "serving" },
-        { label: "oz", value: "oz" },
-        { label: "waffle square", value: "waffle square" },
-        { label: "slice", value: "slice" },
-        { label: "pie crust", value: "pie crust" },
-        { label: "cracker", value: "cracker" },
-        { label: "waffles", value: "waffles" },
-        // 常用兜底（不想要可删）
-        { label: "g", value: "g" },
-        { label: "ml", value: "ml" },
-        { label: "个", value: "个" },
-        { label: "份", value: "份" },
-      ],
 
       queryParams: {
         pageNum: 1,
@@ -205,8 +203,22 @@ export default {
         mealType: null,
         eatenAt: null,
       },
+      queryParams_Food: {
+        pageNum: 1,
+        pageSize: 10,
+        foodName: null,
+        foodGroup: null
+      },
 
-      form: {},
+      form: {
+        foodId: null,
+        foodName: '',
+        foodGroup: '',
+        servingId: null,
+        amount: 1,
+        unit: null
+      },
+      foodServings: [] ,// FoodServingDto[]
 
       rules: {
         foodId: [{ validator: validateFoodIdOrName, trigger: "blur" }],
@@ -214,16 +226,29 @@ export default {
         foodGroup: [{ required: true, message: "食物类别不能为空", trigger: "blur" }],
         mealType: [{ required: true, message: "餐次不能为空", trigger: "change" }],
         amount: [{ required: true, message: "数量不能为空", trigger: "blur" }],
-        unit: [{ required: true, message: "单位不能为空", trigger: "change" }],
+
         // 份量一般可选；如果你希望必填，把 required: true 打开
         // foodServing: [{ required: true, message: "份量不能为空", trigger: "blur" }],
       },
+    }
+  },
+  watch: {
+    'form.servingId'(val) {
+      if (!val) {
+        this.selectedServing = null
+        return
+      }
+
+      this.selectedServing = this.foodServings.find(
+        s => s.servingWeight === val
+      ) || null
     }
   },
   created() {
     this.getList()
   },
   methods: {
+
     // 从登录态拿 userId（不同ruoyi版本做兜底）
     getCurrentUserId() {
       try {
@@ -240,6 +265,53 @@ export default {
         return null
       }
     },
+    querySearchFood(queryString, cb) {
+      if (!queryString) {
+        cb([])
+        return
+      }
+      console.log(queryString)
+      this.queryParams_Food = {
+        pageNum: 1,
+        pageSize: 20,
+        name: queryString,
+        foodGroup: null     // ✅ 强制清空
+      }
+
+      listFood(this.queryParams_Food).then(res => {
+        // el-autocomplete 需要数组
+        console.log(res)
+        cb(res.rows || [])
+      })
+    },
+
+    handleFoodSelect(item) {
+      console.log('这是item')
+       console.log(item)
+       this.form.foodName = item.name
+      this.form.foodId = item.id
+      //
+       this.loadFoodDetail(item.name)
+    },
+
+    loadFoodDetail(foodName) {
+      getFoodBaseDetail({ foodName }).then(res => {
+        console.log(res)
+        const data=res.data
+        // 1. 基础字段回填
+        this.form.foodName = data.foodName
+        this.form.foodGroup = data.foodGroup
+
+        // 2. servings 用于单位/数量选择
+        this.foodServings = data.servings || []
+
+        // 3. 默认选中一个单位（可选）
+        if (this.foodServings.length) {
+          this.form.servingId = this.foodServings[0].servingWeight
+        }
+      })
+    },
+
 
     todayStr() {
       const d = new Date()
@@ -253,6 +325,7 @@ export default {
     getList() {
       this.loading = true
       const uid = this.getCurrentUserId()
+      console.log(uid)
       if (uid != null) this.queryParams.userId = uid
 
       listRecord(this.queryParams)
@@ -278,10 +351,10 @@ export default {
         foodId: null,
         foodName: null,
         foodGroup: null,
-        foodServing: null,          // ✅ 新增字段
+        servingId: null,        // ✅ 新增字段
         mealType: null,
         amount: null,
-        unit: "serving",            // 默认给 serving（你想默认 g 就改成 "g"）
+        unit: null,            // 默认给 serving（你想默认 g 就改成 "g"）
         eatenAt: this.todayStr(),   // 默认今天
         calories: null,
         note: null,
@@ -335,9 +408,21 @@ export default {
           this.form.userId = uid
         }
 
+// 计算总质量 & 组装 unit（展示用）
+        if (this.form.amount != null && this.selectedServing) {
+          const w = this.selectedServing.servingWeight
+          const d = this.selectedServing.servingDesc
+
+          // 标准化总克数
+          this.form.totalWeightG = this.form.amount * w
+
+          // 👇 存库的 unit
+          this.form.unit = `${d}(${w}g)`
+        }
+
         // 兜底字段
         if (!this.form.eatenAt) this.form.eatenAt = this.todayStr()
-        if (!this.form.unit) this.form.unit = "serving"
+
 
         if (this.form.id != null) {
           updateRecord(this.form).then(() => {

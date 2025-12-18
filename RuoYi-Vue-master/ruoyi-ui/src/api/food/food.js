@@ -56,3 +56,27 @@ export function getFoodDetail(id) {
     method: 'get'
   })
 }
+/**
+ * 查询食物基础详情（类别 + 份量）
+ * @param {Object} query
+ * @param {number} query.foodId
+ * @param {string} query.foodName
+ */
+export function getFoodBaseDetail(query) {
+  return request({
+    url: '/food/food/detail',
+    method: 'get',
+    params: query
+  })
+}
+
+
+
+// 查询某天实际营养摄入总量
+export function getDailyActualNutrition(date) {
+  return request({
+    url: '/food/food/nutrition/daily',
+    method: 'get',
+    params: { date }
+  })
+}

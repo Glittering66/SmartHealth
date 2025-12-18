@@ -2,6 +2,7 @@ package com.ruoyi.food.domain.dto;
 
 
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class FoodNutritionDetailDto {
@@ -25,6 +26,16 @@ public class FoodNutritionDetailDto {
 
     /** 维生素 */
     private VitaminDto vitamins;
+
+    public BigDecimal getTotalWeightG() {
+        return totalWeightG;
+    }
+
+    public void setTotalWeightG(BigDecimal totalWeightG) {
+        this.totalWeightG = totalWeightG;
+    }
+
+    private BigDecimal totalWeightG;
 
     public Long getFoodId() {
         return foodId;
