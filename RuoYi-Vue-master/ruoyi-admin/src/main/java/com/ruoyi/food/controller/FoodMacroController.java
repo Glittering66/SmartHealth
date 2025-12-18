@@ -36,4 +36,34 @@ public class FoodMacroController extends BaseController {
                 .put("total", getDataTable(list).getTotal())
                 .put("stats", stats);
     }
+    @GetMapping("/name/list")
+    public AjaxResult listByName(@RequestParam String foodName) {
+        startPage();
+        List<FoodMacroVO> list = foodMacroService.selectFoodMacroByName(foodName);
+        FoodMacroStatsVO stats = foodMacroService.selectStatsByName(foodName);
+
+        return AjaxResult.success()
+                .put("rows", list)
+                .put("total", getDataTable(list).getTotal())
+                .put("stats", stats);
+    }
+
+    /**
+     * 按分类和名称组合查询
+     */
+    @GetMapping("/combo/list")
+    public AjaxResult listByCombo(@RequestParam(required = false) String foodGroup,
+                                  @RequestParam(required = false) String foodName,
+                                  @RequestParam(required = false, defaultValue = "") String orderField,
+                                    @RequestParam(required = false, defaultValue = "") String  orderType) {
+        startPage();
+        List<FoodMacroVO> list = foodMacroService.selectFoodMacroByCombo(foodGroup, foodName, orderField,  orderType);
+        FoodMacroStatsVO stats = foodMacroService.selectStatsByCombo(foodGroup, foodName);
+
+        return AjaxResult.success()
+                .put("rows", list)
+                .put("total", getDataTable(list).getTotal())
+                .put("stats", stats);
+    }
+
 }

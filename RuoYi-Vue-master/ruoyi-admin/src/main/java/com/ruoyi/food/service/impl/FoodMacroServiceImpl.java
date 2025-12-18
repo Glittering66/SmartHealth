@@ -24,4 +24,23 @@ public class FoodMacroServiceImpl implements IFoodMacroService {
     public FoodMacroStatsVO selectStatsByGroup(String foodGroup) {
         return foodMacroMapper.selectStatsByGroup(foodGroup);
     }
+    @Override
+    public
+        // 新增方法
+    List<FoodMacroVO> selectFoodMacroByName(String foodName){
+        return foodMacroMapper.selectFoodMacroByName(foodName);
+    }
+    @Override
+    public FoodMacroStatsVO selectStatsByName(String foodName){
+        return foodMacroMapper.selectStatsByName(foodName);
+    }
+    @Override
+    public  List<FoodMacroVO> selectFoodMacroByCombo(String foodGroup, String foodName,String orderField, String orderType){
+        return foodMacroMapper.selectFoodMacroByCombo(foodGroup, foodName,orderField,  orderType);
+    }
+    @Override
+    public FoodMacroStatsVO selectStatsByCombo(String foodGroup, String foodName){
+        return foodMacroMapper.selectStatsByCombo(foodGroup, foodName);
+    }
+
 }

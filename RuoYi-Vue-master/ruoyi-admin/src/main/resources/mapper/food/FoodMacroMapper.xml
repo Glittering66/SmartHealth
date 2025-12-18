@@ -28,5 +28,91 @@
                  LEFT JOIN nutrients_macro m ON f.id = m.food_id
         WHERE f.food_group = #{foodGroup}
     </select>
+    <!-- 按食物名称查询（支持模糊查询） -->
+    <select id="selectFoodMacroByName" resultType="com.ruoyi.food.domain.vo.FoodMacroVO">
+        SELECT
+            f.id            AS foodId,
+            f.name          AS foodName,
+            f.food_group    AS foodGroup,
+            m.calories,
+            m.protein,
+            m.fat,
+            m.carbohydrate
+        FROM foods f
+                 LEFT JOIN nutrients_macro m ON f.id = m.food_id
+        WHERE f.name LIKE CONCAT('%', #{foodName}, '%')
+    </select>
 
+    <select id="selectStatsByName" resultType="com.ruoyi.food.domain.vo.FoodMacroStatsVO">
+        SELECT
+            COUNT(*) AS total,
+            AVG(m.calories) AS avgCalories,
+            SUM(CASE WHEN m.protein >= 20 THEN 1 ELSE 0 END) AS highProteinCount
+        FROM foods f
+                 LEFT JOIN nutrients_macro m ON f.id = m.food_id
+        WHERE f.name LIKE CONCAT('%', #{foodName}, '%')
+    </select>
+
+    <select id="selectFoodMacroByCombo"
+            resultType="com.ruoyi.food.domain.vo.FoodMacroVO">
+
+        SELECT
+        f.id            AS foodId,
+        f.name          AS foodName,
+        f.food_group    AS foodGroup,
+        m.calories,
+        m.protein,
+        m.fat,
+        m.carbohydrate
+        FROM foods f
+        LEFT JOIN nutrients_macro m ON f.id = m.food_id
+
+        <where>
+            <if test="param1 != null and param1 != ''">
+                AND f.food_group = #{param1}
+            </if>
+            <if test="param2 != null and param2 != ''">
+                AND f.name LIKE CONCAT('%', #{param2}, '%')
+            </if>
+        </where>
+
+        <choose>
+            <when test="orderField == 'calories'">
+                ORDER BY m.calories
+            </when>
+            <when test="orderField == 'protein'">
+                ORDER BY m.protein
+            </when>
+            <when test="orderField == 'fat'">
+                ORDER BY m.fat
+            </when>
+            <when test="orderField == 'carbohydrate'">
+                ORDER BY m.carbohydrate
+            </when>
+            <otherwise>
+                ORDER BY f.id
+            </otherwise>
+        </choose>
+
+        <if test="orderType == 'asc'">ASC</if>
+        <if test="orderType == 'desc'">DESC</if>
+
+    </select>
+
+    <select id="selectStatsByCombo" resultType="com.ruoyi.food.domain.vo.FoodMacroStatsVO">
+        SELECT
+        COUNT(*) AS total,
+        AVG(m.calories) AS avgCalories,
+        SUM(CASE WHEN m.protein >= 20 THEN 1 ELSE 0 END) AS highProteinCount
+        FROM foods f
+        LEFT JOIN nutrients_macro m ON f.id = m.food_id
+        <where>
+            <if test="param1 != null and param1 != ''">
+                AND f.food_group = #{param1}
+            </if>
+            <if test="param2 != null and param2 != ''">
+                AND f.name LIKE CONCAT('%', #{param2}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>

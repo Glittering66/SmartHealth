@@ -53,4 +53,26 @@ export function listMacroByGroup(foodGroup, params) {
     }
   })
 }
+// 新增：按食物名称查询
+export function listMacroByName(foodName, params) {
+  return request({
+    url: '/food/macro/name/list',
+    method: 'get',
+    params: {
+      foodName,
+      ...params
+    }
+  })
+}
 
+// 新增：按分类和名称组合查询
+export function listMacroByCombo(query, params) {
+  return request({
+    url: '/food/macro/combo/list',
+    method: 'get',
+    params: {
+      ...query,
+      ...params
+    }
+  })
+}
