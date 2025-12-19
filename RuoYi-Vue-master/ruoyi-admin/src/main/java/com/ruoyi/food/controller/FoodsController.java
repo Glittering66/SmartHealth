@@ -120,8 +120,8 @@ public class FoodsController extends BaseController
     public AjaxResult getDailyActualNutrition(
             @RequestParam String date) {
 
-//        Long userId = getUserId(); 先暂时注释掉
-         Long userId =0L;
+        Long userId = getUserId();
+//         Long userId =0L;
         Map<String, BigDecimal> actual =
                 foodsService.calcDailyActualNutrition(userId, date);
 

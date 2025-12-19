@@ -156,7 +156,7 @@ export default {
         { key: 'k', label: '钾', unit: 'mg' },
         { key: 'zn', label: '锌', unit: 'mg' },
 
-        { key: 'omega3', label: 'Omega-3', unit: 'g' },
+        { key: 'omega3', label: 'Omega-3', unit: 'mg' },
         { key: 'epaDha', label: 'EPA + DHA', unit: 'mg' }
       ]
       ,

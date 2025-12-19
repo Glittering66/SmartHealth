@@ -36,9 +36,15 @@ public class FoodRecordController extends BaseController
     public TableDataInfo list(FoodRecord foodRecord)
     {
         startPage();
+        foodRecord.setUserId(getUserId());
         List<FoodRecord> list = foodRecordService.selectFoodRecordList(foodRecord);
+       for (FoodRecord foodRecord1 : list) {
+           foodRecord1.setUserId(null);
+       }
         return getDataTable(list);
     }
+
+
 
     /**
      * 导出食物摄入记录列表
@@ -48,7 +54,11 @@ public class FoodRecordController extends BaseController
     @PostMapping("/export")
     public void export(HttpServletResponse response, FoodRecord foodRecord)
     {
+        foodRecord.setUserId(getUserId());
         List<FoodRecord> list = foodRecordService.selectFoodRecordList(foodRecord);
+        for (FoodRecord foodRecord1 : list) {
+            foodRecord1.setUserId(null);
+        }
         ExcelUtil<FoodRecord> util = new ExcelUtil<FoodRecord>(FoodRecord.class);
         util.exportExcel(response, list, "食物摄入记录数据");
     }
@@ -71,7 +81,9 @@ public class FoodRecordController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody FoodRecord foodRecord)
     {
+        foodRecord.setUserId(getUserId());
         return toAjax(foodRecordService.insertFoodRecord(foodRecord));
+
     }
 
     /**
@@ -82,6 +94,7 @@ public class FoodRecordController extends BaseController
     @PutMapping
     public AjaxResult edit(@RequestBody FoodRecord foodRecord)
     {
+        foodRecord.setUserId(getUserId());
         return toAjax(foodRecordService.updateFoodRecord(foodRecord));
     }
 

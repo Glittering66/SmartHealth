@@ -23,23 +23,23 @@ public class FoodRecord extends BaseEntity
     private Long id;
 
     /** 用户ID */
-    @Excel(name = "用户ID")
+
     private Long userId;
 
     /** 食物ID(关联foods.id) */
-    @Excel(name = "食物ID(关联foods.id)")
+    @Excel(name = "食物ID")
     private Long foodId;
 
     /** 食物名称(冗余快照，避免食物表改名影响历史) */
-    @Excel(name = "食物名称(冗余快照，避免食物表改名影响历史)")
+    @Excel(name = "食物名称")
     private String foodName;
 
     /** 食物分类(冗余快照) */
-    @Excel(name = "食物分类(冗余快照)")
+    @Excel(name = "食物分类")
     private String foodGroup;
 
     /** 餐次(早餐/午餐/晚餐/加餐) */
-    @Excel(name = "餐次(早餐/午餐/晚餐/加餐)")
+    @Excel(name = "餐次")
     private String mealType;
 
     /** 摄入数量 */
@@ -47,7 +47,7 @@ public class FoodRecord extends BaseEntity
     private BigDecimal amount;
 
     /** 单位(g/份/个/毫升等) */
-    @Excel(name = "单位(g/份/个/毫升等)")
+    @Excel(name = "单位")
     private String unit;
 
     /** 摄入时间 */
@@ -56,7 +56,7 @@ public class FoodRecord extends BaseEntity
     private Date eatenAt;
 
     /** 热量(可选，kcal) */
-    @Excel(name = "热量(可选，kcal)")
+    @Excel(name = "热量")
     private BigDecimal calories;
 
     public BigDecimal getTotalWeightG() {

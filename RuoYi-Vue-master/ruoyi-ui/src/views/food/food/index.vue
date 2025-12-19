@@ -9,6 +9,14 @@
       v-show="showSearch"
       label-width="68px"
     >
+      <el-form-item label="食物ID" prop="id">
+        <el-input
+          v-model="queryParams.id"
+          placeholder="请输入食物ID"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="食物名称" prop="name">
         <el-input
           v-model="queryParams.name"
@@ -60,14 +68,7 @@
         align="center"
         class-name="small-padding fixed-width"
       >
-<!--        <el-button-->
-<!--          size="mini"-->
-<!--          type="text"-->
-<!--          icon="el-icon-view"-->
-<!--          @click="handleDetail(scope.row)"-->
-<!--        >-->
-<!--          查看详情-->
-<!--        </el-button>-->
+
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -150,6 +151,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         name: null,
+        id: null,
         foodGroup: null
       },
       form: {},
@@ -170,6 +172,22 @@ export default {
     },
     getList() {
       this.loading = true
+
+      // ① 如果输入了 foodId，走 getFood
+      if (this.queryParams.id) {
+        getFood(this.queryParams.id)
+          .then(response => {
+            // getFood 返回的是单条数据
+            this.foodList = response.data ? [response.data] : []
+            this.total = this.foodList.length
+          })
+          .finally(() => {
+            this.loading = false
+          })
+        return
+      }
+
+      // ② 否则走原来的分页查询
       listFood(this.queryParams).then(response => {
         this.foodList = response.rows
         this.total = response.total
@@ -187,6 +205,7 @@ export default {
         foodGroup: null
       }
       this.resetForm("form")
+      this.queryParams.id = null
     },
     handleQuery() {
       this.queryParams.pageNum = 1
