@@ -41,6 +41,8 @@ public class UserNutritionProfileController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(UserNutritionProfile userNutritionProfile)
     {
+        Long userId = getUserId();
+        userNutritionProfile.setUserId(userId);
         startPage();
         List<UserNutritionProfile> list = userNutritionProfileService.selectUserNutritionProfileList(userNutritionProfile);
         return getDataTable(list);
@@ -54,6 +56,7 @@ public class UserNutritionProfileController extends BaseController
     @PostMapping("/export")
     public void export(HttpServletResponse response, UserNutritionProfile userNutritionProfile)
     {
+
         List<UserNutritionProfile> list = userNutritionProfileService.selectUserNutritionProfileList(userNutritionProfile);
         ExcelUtil<UserNutritionProfile> util = new ExcelUtil<UserNutritionProfile>(UserNutritionProfile.class);
         util.exportExcel(response, list, "用户营养计算基础信息数据");
@@ -66,6 +69,7 @@ public class UserNutritionProfileController extends BaseController
     @GetMapping(value = "/{id}")
     public AjaxResult getInfo(@PathVariable("id") Long id)
     {
+
         return success(userNutritionProfileService.selectUserNutritionProfileById(id));
     }
 
@@ -77,6 +81,8 @@ public class UserNutritionProfileController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody UserNutritionProfile userNutritionProfile)
     {
+        Long userId = getUserId();
+        userNutritionProfile.setUserId(userId);
         return toAjax(userNutritionProfileService.insertUserNutritionProfile(userNutritionProfile));
     }
 
@@ -88,6 +94,8 @@ public class UserNutritionProfileController extends BaseController
     @PutMapping
     public AjaxResult edit(@RequestBody UserNutritionProfile userNutritionProfile)
     {
+        Long userId = getUserId();
+        userNutritionProfile.setUserId(userId);
         return toAjax(userNutritionProfileService.updateUserNutritionProfile(userNutritionProfile));
     }
 
@@ -99,6 +107,7 @@ public class UserNutritionProfileController extends BaseController
 	@DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids)
     {
+
         return toAjax(userNutritionProfileService.deleteUserNutritionProfileByIds(ids));
     }
 }

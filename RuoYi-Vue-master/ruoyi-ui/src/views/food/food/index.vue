@@ -91,37 +91,7 @@
       @pagination="getList"
     />
 
-    <!-- 添加 / 修改对话框 -->
-    <el-dialog
-      :title="title"
-      :visible.sync="open"
-      width="500px"
-      append-to-body
-    >
-      <el-form
-        ref="form"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-      >
-        <el-form-item label="食物名称" prop="name">
-          <el-input
-            v-model="form.name"
-            placeholder="请输入食物名称"
-          />
-        </el-form-item>
-        <el-form-item label="食物分类" prop="foodGroup">
-          <el-input
-            v-model="form.foodGroup"
-            placeholder="请输入食物分类"
-          />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
+
   </div>
 </template>
 

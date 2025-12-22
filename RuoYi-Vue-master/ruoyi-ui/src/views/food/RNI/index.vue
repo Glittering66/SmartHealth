@@ -48,6 +48,7 @@
       </el-form>
 
       <el-button type="primary" @click="calculate">计算推荐摄入量</el-button>
+
       <el-date-picker
         v-model="selectedDate"
         type="date"
@@ -55,10 +56,10 @@
         placeholder="选择日期"
         style="margin-right: 10px"
       />
-
       <el-button type="warning" @click="loadDailyNutrition">
         查询当日营养差值
       </el-button>
+
       <el-button
         type="success"
         icon="el-icon-check"
@@ -121,7 +122,9 @@
 
 <script>
 import {addProfile, listProfile, updateProfile} from "@/api/food/profile"
+
 import { getDailyActualNutrition } from '@/api/food/food'
+import {listRecord} from "@/api/food/record";
 export default {
   name: "DailyNutritionCalculator",
   data() {
@@ -164,9 +167,33 @@ export default {
       actual: null,          // 实际摄入量（新增）
       diff: null,            // 差值（新增）
       selectedDate: ''       // 查询日期（新增）
+
     }
   },
+  mounted() {
+    this.loadDefaultRecord()
+  },
   methods: {
+    async loadDefaultRecord() {
+      try {
+        const res = await listProfile({ userId: 0 }) // 这里可以用实际用户 ID
+        const records = res.data || res.rows || []
+        console.log('loadDefaultRecord', res)
+        if (records.length > 0) {
+          const record = records[0] // 默认取第一条记录
+          // 将记录字段映射到 form
+          this.form.gender = record.gender || this.form.gender
+          this.form.age = record.age || this.form.age
+          this.form.height = record.height || this.form.height
+          this.form.weight = record.weight || this.form.weight
+          this.form.activity = record.activityLevel || this.form.activity
+          this.form.sun = record.sunLevel || this.form.sun
+          this.form.smoke = record.smoke === 1 ? true : false
+        }
+      } catch (e) {
+        console.error('加载默认食物记录失败', e)
+      }
+    },
     async loadDailyNutrition() {
       if (!this.result) {
         this.$message.warning('请先计算推荐摄入量')
